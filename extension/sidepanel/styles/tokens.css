@@ -1,0 +1,29 @@
+/* Design tokens shared by the side panel. */
+:root {
+  --brand: #4285f4;
+  --brand-hover: #3367d6;
+  --brand-soft: #eff6ff;
+  --brand-purple: #9b72cb;
+  --brand-red: #d96570;
+  --gemini-gradient: linear-gradient(135deg, var(--brand), var(--brand-purple), var(--brand-red));
+  --ink: #0f172a;
+  --muted: #64748b;
+  --line: #e2e8f0;
+  --bg: #f8fafc;
+  --panel: #ffffff;
+  --danger: #ef4444;
+  --success: #22c55e;
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 18px;
+  --radius-pill: 20px;
+  --radius-full: 9999px;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --glass-bg: rgba(255, 255, 255, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.2);
+}

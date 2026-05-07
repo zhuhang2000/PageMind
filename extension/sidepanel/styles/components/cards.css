@@ -1,0 +1,32 @@
+/* Shared card surfaces for repeated side-panel items. */
+.input-card,
+.prompt-card,
+.result-card,
+.history-item,
+.content-module-item,
+.image-row,
+.submitted-question-block {
+  border: 1px solid var(--line);
+  background: var(--panel);
+}
+
+.prompt-card,
+.result-card,
+.history-item,
+.content-module-item,
+.image-row,
+.submitted-question-block {
+  border-radius: var(--radius);
+}
+
+.input-card {
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow);
+}
+
+.result-card,
+.history-item,
+.image-row,
+.full-content-rich-text {
+  box-shadow: var(--shadow-sm);
+}

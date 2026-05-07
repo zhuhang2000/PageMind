@@ -1,0 +1,359 @@
+/* Shared button primitives and recurring action buttons. */
+button {
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  flex: 1;
+  height: 42px;
+  background: var(--brand);
+  color: white;
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--brand-hover);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  padding: 0 16px;
+  height: 42px;
+  background: var(--panel);
+  color: var(--muted);
+  border: 1px solid var(--line);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--bg);
+  color: var(--ink);
+}
+
+.mini-btn,
+.drawer-pin-btn {
+  min-height: 28px;
+  padding: 0 9px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.drawer-pin-btn {
+  font-weight: 700;
+}
+
+.mini-btn .icon,
+.drawer-pin-btn .icon {
+  width: 14px;
+  height: 14px;
+}
+
+.mini-btn:hover:not(:disabled),
+.mini-btn.primary,
+.drawer-pin-btn:hover,
+.drawer-pin-btn.active {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+  color: var(--brand);
+}
+
+.mini-btn.primary:hover:not(:disabled) {
+  border-color: var(--brand);
+  background: var(--brand);
+  color: #ffffff;
+}
+
+.mini-btn.subtle-danger:hover:not(:disabled) {
+  border-color: #fecaca;
+  background: #fff5f5;
+  color: var(--danger);
+}
+
+.close-drawer-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--bg);
+  color: var(--muted);
+  font-size: 20px;
+  line-height: 1;
+}
+
+.close-drawer-btn:hover {
+  background: var(--line);
+  color: var(--ink);
+}
+
+.icon-action-btn {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0;
+  background: var(--bg);
+  color: var(--muted);
+  display: inline-flex;
+}
+
+.icon-action-btn:hover:not(:disabled) {
+  border-color: var(--brand);
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+
+.icon-action-btn.active {
+  border-color: var(--brand);
+  background: var(--brand);
+  color: white;
+}
+
+.icon-action-btn.danger:hover:not(:disabled),
+.icon-action-btn.danger.active {
+  border-color: #fecaca;
+  background: #fff5f5;
+  color: var(--danger);
+}
+
+.mini-action-btn {
+  padding: 4px;
+  color: var(--muted);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-xs);
+  display: flex;
+}
+
+.mini-action-btn:hover {
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+
+.mini-action-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.attachment-btn,
+.prompt-drawer-btn,
+.content-fetch-btn {
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-full);
+  background: var(--panel);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.attachment-btn,
+.prompt-drawer-btn {
+  height: 28px;
+  font-size: 11px;
+}
+
+.content-fetch-btn {
+  padding: 4px 10px;
+  background: var(--bg);
+  color: var(--brand);
+}
+
+.attachment-btn:hover,
+.prompt-drawer-btn:hover,
+.content-fetch-btn:hover:not(:disabled) {
+  border-color: var(--brand);
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+
+.content-fetch-btn:hover:not(:disabled) {
+  box-shadow: 0 4px 10px rgba(66, 133, 244, 0.12);
+}
+
+.content-fetch-btn:disabled {
+  cursor: wait;
+  opacity: 0.62;
+}
+
+.content-fetch-btn .icon {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+.prompt-drawer-btn {
+  border-color: #bfdbfe;
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+
+.menu-item {
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink);
+  font-size: 13px;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+}
+
+.menu-item:hover {
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+
+.menu-item svg {
+  width: 16px;
+  height: 16px;
+  color: currentColor;
+}
+
+.prompt-icon-btn {
+  padding: 8px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.prompt-icon-btn.primary {
+  border-color: var(--brand);
+  background: var(--brand);
+  color: white;
+}
+
+.prompt-icon-btn.danger {
+  color: var(--danger);
+}
+
+.prompt-icon-btn:hover {
+  opacity: 0.9;
+}
+
+.floating-action-btn {
+  min-height: 30px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.floating-action-btn .icon {
+  width: 15px;
+  height: 15px;
+}
+
+.floating-action-btn:hover:not(:disabled) {
+  border-color: #bfdbfe;
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+
+.floating-action-btn.active {
+  border-color: var(--brand);
+  background: var(--brand);
+  color: #ffffff;
+}
+
+.floating-action-btn.primary {
+  border-color: var(--brand);
+  background: var(--brand);
+  color: #ffffff;
+  box-shadow: 0 6px 14px rgba(66, 133, 244, 0.2);
+}
+
+.floating-action-btn.primary:hover:not(:disabled) {
+  border-color: var(--brand-hover);
+  background: var(--brand-hover);
+}
+
+.send-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: var(--gemini-gradient);
+  color: white;
+  transition: transform 0.2s, opacity 0.2s;
+  flex-shrink: 0;
+}
+
+.send-btn:hover {
+  transform: scale(1.05);
+}
+
+.send-btn:active {
+  transform: scale(0.95);
+}
+
+.send-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.icon-btn-sm {
+  padding: 4px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--muted);
+  display: flex;
+}
+
+.icon-btn-sm:hover {
+  background: var(--bg);
+  color: var(--brand);
+}
+
+.icon-btn-sm svg {
+  width: 14px;
+  height: 14px;
+}

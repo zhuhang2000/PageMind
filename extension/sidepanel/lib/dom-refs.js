@@ -1,0 +1,67 @@
+const $ = (id) => document.getElementById(id);
+
+export const bridgeStatus = $("bridgeStatus");
+export const pageTitle = $("pageTitle");
+export const pageUrl = $("pageUrl");
+export const refreshPageBtn = $("refreshPageBtn");
+export const loadDemoDataBtn = $("loadDemoDataBtn");
+export const resultArea = $("resultArea");
+
+export const attachmentBtn = $("attachmentBtn");
+export const attachmentMenu = $("attachmentMenu");
+export const imageInput = $("imageInput");
+export const addImageBtn = $("addImageBtn");
+export const captureSnipBtn = $("captureSnipBtn");
+export const imagePreviewList = $("imagePreviewList");
+
+export const promptInput = $("promptInput");
+export const summarizeBtn = $("summarizeBtn");
+export const includePageContent = $("includePageContent");
+export const expandContentPanelBtn = $("expandContentPanelBtn");
+export const toggleContextBtn = $("toggleContextBtn");
+
+export const drawerOverlay = $("drawerOverlay");
+export const contentPreviewPanel = $("contentPreviewPanel");
+export const closePreviewBtn = $("closePreviewBtn");
+export const selectAllModulesBtn = $("selectAllModulesBtn");
+export const clearModulesBtn = $("clearModulesBtn");
+export const contentModuleList = $("contentModuleList");
+
+export const promptDrawerBtn = $("promptDrawerBtn");
+export const promptDrawer = $("promptDrawer");
+export const promptEditorDrawer = $("promptEditorDrawer");
+export const promptList = $("promptList");
+export const createNewPromptBtn = $("createNewPromptBtn");
+export const promptNameInput = $("promptNameInput");
+export const promptTextInput = $("promptTextInput");
+export const savePromptBtn = $("savePromptBtn");
+export const deletePromptBtn = $("deletePromptBtn");
+export const closePromptDrawerBtn = $("closePromptDrawerBtn");
+export const closeEditorBtn = $("closeEditorBtn");
+export const historyDrawerBtn = $("historyDrawerBtn");
+export const historyDrawer = $("historyDrawer");
+export const closeHistoryDrawerBtn = $("closeHistoryDrawerBtn");
+export const historySearchInput = $("historySearchInput");
+export const historyList = $("historyList");
+export const historyCount = $("historyCount");
+export const clearHistoryBtn = $("clearHistoryBtn");
+export const newSessionBtn = $("newSessionBtn");
+
+export const fullContentViewer = $("fullContentViewer");
+export const fullContentTitle = $("fullContentTitle");
+export const fullContentText = $("fullContentText");
+export const closeFullContentBtn = $("closeFullContentBtn");
+export const addSelectedTextBtn = $("addSelectedTextBtn");
+export const fullContentModeGuide = $("fullContentModeGuide");
+export const fullContentSelectionStatus = $("fullContentSelectionStatus");
+export const fullContentSelectionText = $("fullContentSelectionText");
+export const applyFullContentSelectionsBtn = $("applyFullContentSelectionsBtn");
+export const clearFullContentSelectionsBtn = $("clearFullContentSelectionsBtn");
+export const fullContentSelectionPreviewList = $("fullContentSelectionPreviewList");
+export const submittedContentViewer = $("submittedContentViewer");
+export const submittedContentTitle = $("submittedContentTitle");
+export const submittedContentMeta = $("submittedContentMeta");
+export const submittedContentQuestion = $("submittedContentQuestion");
+export const submittedContentText = $("submittedContentText");
+export const closeSubmittedContentBtn = $("closeSubmittedContentBtn");
+export const fullContentMeta = $("fullContentMeta");

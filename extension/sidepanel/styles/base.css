@@ -1,0 +1,19 @@
+/* Shared icon styles. */
+.icon {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2;
+  stroke: currentColor;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+}
+
+.generate-gemini-icon {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+  stroke: none;
+  opacity: 0.96;
+}

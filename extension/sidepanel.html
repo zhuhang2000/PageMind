@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gemini 网页助手</title>
+  <link rel="stylesheet" href="sidepanel/styles/tokens.css" />
+  <link rel="stylesheet" href="sidepanel/styles/reset.css" />
+  <link rel="stylesheet" href="sidepanel/styles/utilities.css" />
+  <link rel="stylesheet" href="sidepanel/styles/components/buttons.css" />
+  <link rel="stylesheet" href="sidepanel/styles/components/cards.css" />
+  <link rel="stylesheet" href="sidepanel/styles/base.css" />
+  <link rel="stylesheet" href="sidepanel/styles/page-header.css" />
+  <link rel="stylesheet" href="sidepanel/styles/prompt-controls.css" />
+  <link rel="stylesheet" href="sidepanel/styles/content-modules.css" />
+  <link rel="stylesheet" href="sidepanel/styles/full-content.css" />
+  <link rel="stylesheet" href="sidepanel/styles/images.css" />
+  <link rel="stylesheet" href="sidepanel/styles/actions.css" />
+  <link rel="stylesheet" href="sidepanel/styles/results.css" />
+  <link rel="stylesheet" href="sidepanel/styles/history.css" />
+  <link rel="stylesheet" href="sidepanel/styles/drawer.css" />
+  <link rel="stylesheet" href="sidepanel/styles/scrollbar.css" />
+</head>
+<body>
+
+<div class="page-info">
+  <div class="page-info-header">
+    <div class="page-text">
+      <div class="page-title" id="pageTitle">—</div>
+      <div class="page-url" id="pageUrl">—</div>
+    </div>
+    <div class="header-actions">
+      <span id="bridgeStatus" class="bridge-status checking" title="Bridge 连接状态"></span>
+      <button class="content-fetch-btn demo-data-btn" id="loadDemoDataBtn" title="加载侧边栏测试数据" aria-label="加载侧边栏测试数据">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M4 4h16v16H4z"></path>
+          <path d="M8 8h8"></path>
+          <path d="M8 12h5"></path>
+          <path d="M8 16h7"></path>
+        </svg>
+        <span>加载 Demo</span>
+      </button>
+      <button class="content-fetch-btn" id="refreshPageBtn" title="手动获取当前网页内容" aria-label="手动获取当前网页内容">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M20 12V5.75c0-.16-.06-.31-.18-.43l-3.14-3.14A.6.6 0 0 0 16.25 2H4.6a.6.6 0 0 0-.6.6v18.8c0 .33.27.6.6.6H11"></path>
+          <path d="M8 10h8M8 6h4M8 14h3"></path>
+          <path d="m20.5 20.5 1.5 1.5"></path>
+          <path d="M15 18a3 3 0 1 0 6 0 3 3 0 0 0-6 0Z"></path>
+          <path d="M16 5.4V2.35a.35.35 0 0 1 .6-.25l3.3 3.3a.35.35 0 0 1-.25.6H16.6a.6.6 0 0 1-.6-.6Z"></path>
+        </svg>
+        <span>获取网页内容</span>
+      </button>
+    </div>
+  </div>
+  <div class="context-top-bar" id="contextStatusBar">
+    <input id="includePageContent" type="checkbox" checked hidden />
+    <button class="context-summary-btn context-state-empty" id="expandContentPanelBtn" type="button" title="管理网页上下文内容">
+      <span class="context-main">
+        <svg class="icon context-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <path d="M14 2v6h6"></path>
+          <path d="M8 13h8"></path>
+          <path d="M8 17h5"></path>
+        </svg>
+        <span class="context-title">还没有网页内容</span>
+      </span>
+      <span class="context-meta">获取内容后会显示在这里</span>
+      <span class="context-action">管理内容</span>
+    </button>
+  </div>
+</div>
+
+<div class="result-area" id="resultArea">
+  <div class="result-placeholder">
+    <div class="placeholder-icon-wrapper">
+      <svg class="generate-gemini-icon large" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M11.04 19.32Q12 21.51 12 24q0-2.49.93-4.68.96-2.19 2.58-3.81t3.81-2.55Q21.51 12 24 12q-2.49 0-4.68-.93a12.3 12.3 0 0 1-3.81-2.58 12.3 12.3 0 0 1-2.58-3.81Q12 2.49 12 0q0 2.49-.96 4.68-.93 2.19-2.55 3.81a12.3 12.3 0 0 1-3.81 2.58Q2.49 12 0 12q2.49 0 4.68.96 2.19.93 3.81 2.55t2.55 3.81"/>
+      </svg>
+    </div>
+    <div class="placeholder-title">你好，我是 Gemini</div>
+    <div class="placeholder-copy">我可以帮你总结网页、分析图片或回答问题</div>
+  </div>
+</div>
+
+<div class="input-container">
+  <input class="image-input" id="imageInput" type="file" accept="image/png,image/jpeg,image/webp,image/gif" multiple />
+  <div class="image-preview-bar" id="imagePreviewList"></div>
+
+  <div class="input-card">
+    <div class="input-main-row">
+      <div class="input-wrapper">
+        <textarea id="promptInput" rows="1" placeholder="问问 Gemini..."></textarea>
+      </div>
+
+      <button class="send-btn" id="summarizeBtn" title="发送">
+        <svg class="icon" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+      </button>
+    </div>
+
+    <div class="input-toolbar-row">
+      <div class="input-actions-left">
+        <button class="attachment-btn" id="attachmentBtn" title="添加附件">
+          <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        </button>
+        <div class="attachment-menu" id="attachmentMenu">
+          <button class="menu-item" id="addImageBtn">
+            <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+            上传图片
+          </button>
+          <button class="menu-item" id="captureSnipBtn">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M7 3H5a2 2 0 0 0-2 2v2"></path><path d="M17 3h2a2 2 0 0 1 2 2v2"></path><path d="M21 17v2a2 2 0 0 1-2 2h-2"></path><path d="M7 21H5a2 2 0 0 1-2-2v-2"></path><path d="M8 12h8"></path><path d="M12 8v8"></path></svg>
+            截屏识别
+          </button>
+          <button class="menu-item" id="toggleContextBtn">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            网页内容
+          </button>
+        </div>
+      </div>
+
+      <div class="input-actions-right">
+        <button class="prompt-drawer-btn" id="historyDrawerBtn" type="button" title="问答历史">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M3 3v5h5"></path><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"></path><path d="M12 7v5l3 2"></path></svg>
+          <span>历史</span>
+        </button>
+        <button class="prompt-drawer-btn" id="promptDrawerBtn" type="button" title="提示词模板">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+          <span>提示词模板</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  
+</div>
+
+<!-- 抽屉式面板 -->
+<div class="drawer-overlay" id="drawerOverlay"></div>
+
+<div class="drawer-panel" id="historyDrawer">
+  <div class="drawer-header">
+    <h3>会话管理</h3>
+    <div class="drawer-actions">
+      <span class="history-count" id="historyCount">0/0 个会话 · 0 条</span>
+      <button class="mini-btn primary" id="newSessionBtn" type="button" title="新建会话">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+        <span>新建</span>
+      </button>
+      <button class="mini-btn subtle-danger" id="clearHistoryBtn" type="button" title="清空全部历史">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18"></path><path d="M6 6l12 12"></path></svg>
+        <span>清空</span>
+      </button>
+      <button class="close-drawer-btn" id="closeHistoryDrawerBtn">&times;</button>
+    </div>
+  </div>
+  <div class="drawer-content history-drawer-content">
+    <input class="history-search-input" id="historySearchInput" type="search" placeholder="搜索会话、网址、问题、网页内容或回复" />
+    <div class="history-list" id="historyList"></div>
+  </div>
+</div>
+
+<div class="drawer-panel" id="promptDrawer">
+  <div class="drawer-header">
+    <h3>提示词模板</h3>
+    <div class="drawer-actions">
+      <button class="mini-btn primary" id="createNewPromptBtn" type="button" title="新增模板">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+        <span>新增</span>
+      </button>
+      <button class="close-drawer-btn" id="closePromptDrawerBtn">&times;</button>
+    </div>
+  </div>
+  <div class="drawer-content">
+    <div class="prompt-list" id="promptList">
+      <!-- 模板列表将在这里生成 -->
+    </div>
+  </div>
+</div>
+
+<div class="drawer-panel" id="promptEditorDrawer">
+  <div class="drawer-header">
+    <h3 id="editorTitle">新增模板</h3>
+    <button class="close-drawer-btn" id="closeEditorBtn">&times;</button>
+  </div>
+  <div class="drawer-content">
+    <div class="prompt-editor-form">
+      <div class="prompt-field">
+        <span>模板名称</span>
+        <input type="text" id="promptNameInput" placeholder="例如：总结全文">
+      </div>
+      <div class="prompt-field">
+        <span>提示词内容</span>
+        <textarea id="promptTextInput" placeholder="输入提示词内容..."></textarea>
+      </div>
+      <div class="prompt-editor-actions">
+        <button class="prompt-icon-btn danger" id="deletePromptBtn" title="删除模板">
+          <svg class="icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          删除
+        </button>
+        <button class="prompt-icon-btn primary" id="savePromptBtn" title="保存模板">
+          <svg class="icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          保存
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="drawer-panel" id="contentPreviewPanel">
+  <div class="drawer-header">
+    <h3>内容预览</h3>
+    <div class="drawer-actions">
+      <button class="mini-btn" id="selectAllModulesBtn" type="button" title="选择全部内容模块">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+        <span>全选</span>
+      </button>
+      <button class="mini-btn subtle-danger" id="clearModulesBtn" type="button" title="清除已选内容模块">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18"></path><path d="M6 6l12 12"></path></svg>
+        <span>清除</span>
+      </button>
+      <button class="close-drawer-btn" id="closePreviewBtn">&times;</button>
+    </div>
+  </div>
+  <div class="drawer-content">
+    <div class="content-module-list" id="contentModuleList"></div>
+  </div>
+</div>
+
+<div class="drawer-panel full" id="fullContentViewer">
+  <div class="drawer-header">
+    <div class="drawer-title-block">
+      <h3 id="fullContentTitle">全文视图</h3>
+      <div class="full-content-meta" id="fullContentMeta">拖选文本后可加入发送内容</div>
+    </div>
+  </div>
+  <div class="full-content-floating-actions" aria-label="全文操作">
+    <div class="full-content-mode-guide" id="fullContentModeGuide"></div>
+    <div class="full-content-action-buttons">
+      <button class="floating-action-btn" id="addSelectedTextBtn" type="button" title="进入摘录模式" aria-label="进入摘录模式" aria-pressed="false">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+        <span class="action-label">摘录</span>
+      </button>
+      <button class="floating-action-btn primary" id="closeFullContentBtn" type="button" title="保存并关闭" aria-label="保存并关闭">
+        <svg class="icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        <span class="action-label">保存</span>
+      </button>
+    </div>
+  </div>
+  <div class="drawer-content">
+    <div class="full-content-rich-text" id="fullContentText" tabindex="0" contenteditable="true" spellcheck="false" aria-label="可编辑全文内容"></div>
+  </div>
+  <div class="full-content-selection-status" id="fullContentSelectionStatus">
+    <span id="fullContentSelectionText">未选择片段</span>
+    <button class="selection-apply-btn" id="applyFullContentSelectionsBtn" type="button" disabled>
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+      <span>执行</span>
+    </button>
+    <button class="selection-clear-btn" id="clearFullContentSelectionsBtn" type="button" title="清空暂存选区">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18"></path><path d="M6 6l12 12"></path></svg>
+      <span>清空</span>
+    </button>
+    <div class="selection-preview-list" id="fullContentSelectionPreviewList"></div>
+  </div>
+</div>
+
+<div class="drawer-panel full" id="submittedContentViewer">
+  <div class="drawer-header">
+    <div class="drawer-title-block">
+      <h3 id="submittedContentTitle">提交内容</h3>
+      <div class="full-content-meta" id="submittedContentMeta">—</div>
+    </div>
+    <button class="close-drawer-btn" id="closeSubmittedContentBtn">&times;</button>
+  </div>
+  <div class="drawer-content submitted-content-viewer-content">
+    <div class="submitted-question-block">
+      <div class="submitted-question-label">当时的问题</div>
+      <div class="submitted-question-text" id="submittedContentQuestion"></div>
+    </div>
+    <pre class="submitted-full-text" id="submittedContentText"></pre>
+  </div>
+</div>
+
+<script type="module" src="sidepanel/app.js"></script>
+</body>
+</html>

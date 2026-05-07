@@ -1,0 +1,145 @@
+/* Unified centered modal system for secondary panels. */
+.drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.42);
+  z-index: 200;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.22s ease, visibility 0.22s ease;
+  backdrop-filter: blur(4px);
+}
+
+.drawer-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.drawer-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: fit-content;
+  min-width: min(420px, calc(100vw - 40px));
+  min-height: 180px;
+  max-width: min(760px, calc(100vw - 40px));
+  background: var(--panel);
+  z-index: 210;
+  transform: translate(-50%, calc(-50% + 18px)) scale(0.98);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 0.18s ease,
+    visibility 0.18s ease;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(226, 232, 240, 0.92);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.28);
+  height: fit-content;
+  max-height: min(82vh, 720px);
+  overflow: hidden;
+  resize: both;
+}
+
+.drawer-panel.active {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+  visibility: visible;
+}
+
+.drawer-panel.drawer-positioned {
+  transform: translate(0, 0) scale(0.98);
+}
+
+.drawer-panel.drawer-positioned.active {
+  transform: translate(0, 0) scale(1);
+}
+
+.drawer-panel.is-dragging {
+  transition: opacity 0.18s ease, visibility 0.18s ease;
+  user-select: none;
+}
+
+.drawer-panel.full {
+  width: min(900px, calc(100vw - 28px));
+  max-width: min(900px, calc(100vw - 28px));
+  height: min(90vh, 820px);
+  max-height: min(90vh, 820px);
+  resize: both;
+}
+
+.drawer-header {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+  cursor: grab;
+  user-select: none;
+}
+
+.drawer-header:active {
+  cursor: grabbing;
+}
+
+.drawer-header h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.drawer-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.drawer-content {
+  width: 100%;
+  min-width: 0;
+  flex: 0 1 auto;
+  overflow-y: auto;
+  padding: 16px;
+  min-height: 80px;
+  max-height: calc(min(82vh, 720px) - 58px);
+}
+
+.drawer-panel.full .drawer-content {
+  flex: 1 1 auto;
+  max-height: calc(min(90vh, 820px) - 58px);
+}
+
+.drawer-footer {
+  padding: 10px 16px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.drawer-title-block {
+  min-width: 0;
+  flex: 1;
+}
+
+@media (max-width: 520px) {
+  .drawer-panel,
+  .drawer-panel.full {
+    width: calc(100vw - 20px);
+    min-width: 0;
+    max-height: calc(100vh - 24px);
+  }
+
+  .drawer-content,
+  .drawer-panel.full .drawer-content {
+    max-height: calc(100vh - 92px);
+    padding: 14px;
+  }
+}
+

@@ -1,0 +1,444 @@
+import { resultArea, historyList, historyCount, clearHistoryBtn, historySearchInput } from "../lib/dom-refs.js";
+import { renderUserQuestion, renderResult } from "./results.js";
+import { openDrawerById } from "./drawers.js";
+
+const SESSION_STORAGE_KEY = "aiWebAssistant.sessions.v1";
+const LEGACY_HISTORY_STORAGE_KEY = "aiWebAssistant.history.v1";
+const ACTIVE_SESSION_STORAGE_KEY = "aiWebAssistant.activeSessionId.v1";
+const MAX_SESSIONS = 20;
+const MAX_TOTAL_MESSAGES = 50;
+const MAX_HISTORY_CONTENT_CHARS = 20000;
+const MAX_HISTORY_ANSWER_CHARS = 5000;
+
+let sessions = [];
+let activeSessionId = "";
+let sessionSearchQuery = "";
+let sessionSearchTimer = null;
+
+function makeHistoryId() {
+  if (globalThis.crypto?.randomUUID) return crypto.randomUUID();
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function normalizeSessionTitle(value) {
+  return String(value || "新会话").replace(/\s+/g, " ").trim().slice(0, 60) || "新会话";
+}
+
+function formatHistoryTime(value) {
+  const date = new Date(value || Date.now());
+  return date.toLocaleString("zh-CN", {
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function truncateHistoryText(text, maxLength) {
+  const value = String(text || "").replace(/\s+/g, " ").trim();
+  return value.length > maxLength ? `${value.slice(0, maxLength)}...` : value;
+}
+
+function createSession({ title, pageTitle, pageUrl } = {}) {
+  const now = Date.now();
+  const resolvedTitle = normalizeSessionTitle(title || pageTitle || "新会话");
+  return {
+    id: makeHistoryId(),
+    title: resolvedTitle,
+    createdAt: now,
+    updatedAt: now,
+    pageTitle: String(pageTitle || ""),
+    pageUrl: String(pageUrl || ""),
+    messages: [],
+  };
+}
+
+function createSessionMessage({ provider, question, content, summary }) {
+  const contentText = String(content || "");
+  const answerText = String(summary || "");
+
+  return {
+    id: makeHistoryId(),
+    createdAt: Date.now(),
+    provider: String(provider || "unknown"),
+    question: String(question || ""),
+    answer: answerText.slice(0, MAX_HISTORY_ANSWER_CHARS),
+    contentPreview: contentText.slice(0, MAX_HISTORY_CONTENT_CHARS),
+    contentCharCount: contentText.length,
+    answerCharCount: answerText.length,
+  };
+}
+
+function trimSessions(inputSessions) {
+  const nextSessions = [...inputSessions]
+    .map((session) => ({
+      ...session,
+      messages: [...(session.messages || [])]
+        .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
+        .slice(0, MAX_TOTAL_MESSAGES),
+    }))
+    .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0))
+    .slice(0, MAX_SESSIONS);
+
+  let remainingMessages = MAX_TOTAL_MESSAGES;
+  return nextSessions.map((session) => {
+    const messages = (session.messages || []).slice(0, Math.max(remainingMessages, 0));
+    remainingMessages -= messages.length;
+    return { ...session, messages };
+  });
+}
+
+function countMessages(inputSessions) {
+  return inputSessions.reduce((sum, session) => sum + (session.messages?.length || 0), 0);
+}
+
+function searchSessions(inputSessions, query) {
+  const keyword = String(query || "").trim().toLowerCase();
+  if (!keyword) return inputSessions;
+
+  return inputSessions.filter((session) =>
+    [
+      session.title,
+      session.pageTitle,
+      session.pageUrl,
+      ...(session.messages || []).flatMap((message) => [
+        message.question,
+        message.answer,
+        message.contentPreview,
+        message.provider,
+      ]),
+    ]
+      .join("\n")
+      .toLowerCase()
+      .includes(keyword)
+  );
+}
+
+function migrateFlatHistory(flatHistory) {
+  if (!Array.isArray(flatHistory) || flatHistory.length === 0) return [];
+
+  const now = Date.now();
+  const messages = flatHistory
+    .slice(0, MAX_TOTAL_MESSAGES)
+    .map((item) => ({
+      id: item.id || makeHistoryId(),
+      createdAt: item.createdAt || now,
+      provider: item.provider || "unknown",
+      question: item.instruction || "",
+      answer: String(item.summary || "").slice(0, MAX_HISTORY_ANSWER_CHARS),
+      contentPreview: String(item.contentPreview || "").slice(0, MAX_HISTORY_CONTENT_CHARS),
+      contentCharCount: item.contentCharCount || item.contentPreview?.length || 0,
+      answerCharCount: item.summaryCharCount || item.summary?.length || 0,
+    }))
+    .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+  const first = flatHistory[0] || {};
+  return [
+    {
+      id: makeHistoryId(),
+      title: "历史记录迁移",
+      createdAt: now,
+      updatedAt: now,
+      pageTitle: first.title || "",
+      pageUrl: first.url || "",
+      messages,
+    },
+  ];
+}
+
+async function loadSessions() {
+  if (!globalThis.chrome?.storage?.local) {
+    return sessions;
+  }
+
+  const result = await chrome.storage.local.get({
+    [SESSION_STORAGE_KEY]: [],
+    [LEGACY_HISTORY_STORAGE_KEY]: [],
+    [ACTIVE_SESSION_STORAGE_KEY]: "",
+  });
+
+  sessions = Array.isArray(result[SESSION_STORAGE_KEY]) ? result[SESSION_STORAGE_KEY] : [];
+  if (sessions.length === 0 && Array.isArray(result[LEGACY_HISTORY_STORAGE_KEY]) && result[LEGACY_HISTORY_STORAGE_KEY].length > 0) {
+    sessions = trimSessions(migrateFlatHistory(result[LEGACY_HISTORY_STORAGE_KEY]));
+    await chrome.storage.local.set({ [SESSION_STORAGE_KEY]: sessions });
+  }
+
+  activeSessionId = result[ACTIVE_SESSION_STORAGE_KEY] || sessions[0]?.id || "";
+  if (activeSessionId && !sessions.some((session) => session.id === activeSessionId)) {
+    activeSessionId = sessions[0]?.id || "";
+  }
+
+  return sessions;
+}
+
+async function persistSessions() {
+  sessions = trimSessions(sessions);
+  if (activeSessionId && !sessions.some((session) => session.id === activeSessionId)) {
+    activeSessionId = sessions[0]?.id || "";
+  }
+  if (!globalThis.chrome?.storage?.local) return;
+  await chrome.storage.local.set({
+    [SESSION_STORAGE_KEY]: sessions,
+    [ACTIVE_SESSION_STORAGE_KEY]: activeSessionId,
+  });
+}
+
+export async function createNewSession({ title, pageTitle, pageUrl } = {}) {
+  const session = createSession({ title, pageTitle, pageUrl });
+  sessions = [session, ...sessions];
+  activeSessionId = session.id;
+  await persistSessions();
+  renderActiveSession();
+  renderSessionList();
+  return session;
+}
+
+export async function ensureActiveSession({ pageTitle, pageUrl } = {}) {
+  await loadSessions();
+  let active = sessions.find((session) => session.id === activeSessionId);
+  if (!active) {
+    active = await createNewSession({ title: pageTitle || "新会话", pageTitle, pageUrl });
+  }
+  return active;
+}
+
+export async function saveHistoryRecord(input) {
+  const active = await ensureActiveSession({
+    pageTitle: input.title,
+    pageUrl: input.url,
+  });
+  const message = createSessionMessage(input);
+  active.messages = [message, ...(active.messages || [])];
+  active.updatedAt = Date.now();
+  if (!active.pageTitle && input.title) active.pageTitle = input.title;
+  if (!active.pageUrl && input.url) active.pageUrl = input.url;
+  if (!active.title || active.title === "新会话") {
+    active.title = normalizeSessionTitle(input.title || input.instruction || "新会话");
+  }
+  await persistSessions();
+  renderSessionList();
+  return message;
+}
+
+async function switchSession(sessionId) {
+  if (!sessions.some((session) => session.id === sessionId)) return;
+  activeSessionId = sessionId;
+  await persistSessions();
+  renderActiveSession();
+  renderSessionList();
+}
+
+async function deleteSession(sessionId) {
+  sessions = sessions.filter((session) => session.id !== sessionId);
+  if (activeSessionId === sessionId) {
+    activeSessionId = sessions[0]?.id || "";
+  }
+  await persistSessions();
+  renderActiveSession();
+  renderSessionList();
+}
+
+export async function clearHistoryRecords() {
+  sessions = [];
+  activeSessionId = "";
+  await persistSessions();
+  renderActiveSession();
+  renderSessionList();
+}
+
+export async function loadDemoSessions(inputSessions, nextActiveSessionId = "", options = {}) {
+  sessions = trimSessions(Array.isArray(inputSessions) ? inputSessions : []);
+  activeSessionId = nextActiveSessionId || sessions[0]?.id || "";
+  if (activeSessionId && !sessions.some((session) => session.id === activeSessionId)) {
+    activeSessionId = sessions[0]?.id || "";
+  }
+  if (options.persist === true) {
+    await persistSessions();
+  }
+  renderActiveSession();
+  renderSessionList();
+  return sessions;
+}
+
+export async function initHistory() {
+  await loadSessions();
+  renderActiveSession();
+  renderSessionList();
+  return sessions;
+}
+
+export async function openHistoryDrawer() {
+  await loadSessions();
+  renderActiveSession();
+  renderSessionList();
+  openDrawerById("historyDrawer");
+  historySearchInput?.focus({ preventScroll: true });
+}
+
+export function handleHistorySearchInput() {
+  clearTimeout(sessionSearchTimer);
+  sessionSearchTimer = setTimeout(() => {
+    sessionSearchQuery = historySearchInput?.value || "";
+    renderSessionList();
+  }, 180);
+}
+
+export function renderActiveSession() {
+  if (!resultArea) return;
+
+  const active = sessions.find((session) => session.id === activeSessionId);
+  resultArea.innerHTML = "";
+
+  if (!active || !active.messages?.length) {
+    renderResultPlaceholder();
+    return;
+  }
+
+  const orderedMessages = [...active.messages].sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+  for (const message of orderedMessages) {
+    renderUserQuestion(message.question);
+    renderResult(message.answer, false, {
+      provider: message.provider,
+      title: active.pageTitle || active.title,
+      url: active.pageUrl,
+      question: message.question,
+      contentPreview: message.contentPreview,
+      contentCharCount: message.contentCharCount,
+    });
+  }
+  resultArea.scrollTo({ top: resultArea.scrollHeight });
+}
+
+function renderResultPlaceholder() {
+  const placeholder = document.createElement("div");
+  placeholder.className = "result-placeholder";
+  placeholder.innerHTML = `
+    <div class="placeholder-icon-wrapper">
+      <svg class="generate-gemini-icon large" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M11.04 19.32Q12 21.51 12 24q0-2.49.93-4.68.96-2.19 2.58-3.81t3.81-2.55Q21.51 12 24 12q-2.49 0-4.68-.93a12.3 12.3 0 0 1-3.81-2.58 12.3 12.3 0 0 1-2.58-3.81Q12 2.49 12 0q0 2.49-.96 4.68-.93 2.19-2.55 3.81a12.3 12.3 0 0 1-3.81 2.58Q2.49 12 0 12q2.49 0 4.68.96 2.19.93 3.81 2.55t2.55 3.81"/>
+      </svg>
+    </div>
+    <div class="placeholder-title">新会话</div>
+    <div class="placeholder-copy">输入问题后会保存在当前会话中</div>
+  `;
+  resultArea.appendChild(placeholder);
+}
+
+function renderSessionList() {
+  if (!historyList || !historyCount) return;
+
+  const visibleSessions = searchSessions(sessions, sessionSearchQuery);
+  historyCount.textContent = `${visibleSessions.length}/${sessions.length} 个会话 · ${countMessages(sessions)} 条`;
+  clearHistoryBtn.disabled = sessions.length === 0;
+  historyList.innerHTML = "";
+
+  if (sessions.length === 0) {
+    historyList.appendChild(createHistoryEmpty("暂无会话"));
+    return;
+  }
+
+  if (visibleSessions.length === 0) {
+    historyList.appendChild(createHistoryEmpty("没有匹配的会话"));
+    return;
+  }
+
+  for (const session of visibleSessions) {
+    historyList.appendChild(createSessionItem(session));
+  }
+}
+
+function createHistoryEmpty(text) {
+  const empty = document.createElement("div");
+  empty.className = "history-empty";
+  empty.textContent = text;
+  return empty;
+}
+
+function createSessionItem(session) {
+  const row = document.createElement("article");
+  row.className = "history-item session-item";
+  if (session.id === activeSessionId) row.classList.add("active-session");
+
+  const header = document.createElement("div");
+  header.className = "history-item-header";
+
+  const title = document.createElement("div");
+  title.className = "history-item-title";
+  title.textContent = session.title || "未命名会话";
+  title.title = session.title || "";
+
+  const count = document.createElement("span");
+  count.className = "history-provider";
+  count.textContent = `${session.messages?.length || 0} 轮`;
+
+  const meta = document.createElement("div");
+  meta.className = "history-item-meta";
+  meta.textContent = `${formatHistoryTime(session.updatedAt)} · ${session.pageUrl || "无来源 URL"}`;
+
+  const latest = [...(session.messages || [])].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))[0];
+  const preview = document.createElement("div");
+  preview.className = "history-summary";
+  preview.textContent = latest
+    ? truncateHistoryText(`${latest.question} / ${latest.answer}`, 220)
+    : "空会话";
+
+  const actions = document.createElement("div");
+  actions.className = "history-actions";
+
+  const switchBtn = document.createElement("button");
+  switchBtn.className = "mini-btn primary";
+  switchBtn.type = "button";
+  switchBtn.textContent = session.id === activeSessionId ? "当前会话" : "切换";
+  switchBtn.disabled = session.id === activeSessionId;
+  switchBtn.addEventListener("click", () => switchSession(session.id));
+
+  const copyBtn = document.createElement("button");
+  copyBtn.className = "mini-btn";
+  copyBtn.type = "button";
+  copyBtn.textContent = "复制全部";
+  copyBtn.disabled = !session.messages?.length;
+  copyBtn.addEventListener("click", () => {
+    navigator.clipboard.writeText(formatSessionText(session));
+  });
+
+  const deleteBtn = document.createElement("button");
+  deleteBtn.className = "mini-btn subtle-danger";
+  deleteBtn.type = "button";
+  deleteBtn.textContent = "删除";
+  deleteBtn.addEventListener("click", () => deleteSession(session.id));
+
+  header.appendChild(title);
+  header.appendChild(count);
+  actions.appendChild(switchBtn);
+  actions.appendChild(copyBtn);
+  actions.appendChild(deleteBtn);
+  row.appendChild(header);
+  row.appendChild(meta);
+  row.appendChild(preview);
+  row.appendChild(actions);
+  return row;
+}
+
+function formatSessionText(session) {
+  const header = [`会话：${session.title || ""}`, session.pageUrl ? `来源：${session.pageUrl}` : ""]
+    .filter(Boolean)
+    .join("\n");
+  const messages = [...(session.messages || [])]
+    .sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0))
+    .map((message, index) =>
+      [`第 ${index + 1} 轮`, `问题：\n${message.question || ""}`, `回答：\n${message.answer || ""}`].join("\n")
+    )
+    .join("\n\n");
+  return [header, messages].filter(Boolean).join("\n\n");
+}
+
+export const __historyInternals = {
+  createSession,
+  createSessionMessage,
+  trimSessions,
+  countMessages,
+  migrateFlatHistory,
+  searchSessions,
+  truncateHistoryText,
+  loadDemoSessions,
+};
