@@ -326,6 +326,134 @@
   overflow: auto;
 }
 
+/* ── Multi-select Q&A ── */
+.qa-select-toggle {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  align-self: flex-end;
+  flex-shrink: 0;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  background: var(--brand);
+  border: 1px solid var(--brand);
+  color: #ffffff;
+  font-family: var(--wenkai);
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(90, 138, 106, 0.30);
+  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+}
+
+.qa-select-toggle .icon {
+  width: 14px;
+  height: 14px;
+  stroke-width: 2.5;
+}
+
+.qa-select-toggle:hover {
+  background: var(--brand-hover);
+  border-color: var(--brand-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(90, 138, 106, 0.35);
+}
+
+.qa-select-toggle.active {
+  background: var(--panel);
+  border-color: var(--line);
+  color: var(--muted);
+  box-shadow: var(--shadow-sm);
+}
+
+.qa-select-toggle.active:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+  background: var(--panel);
+  transform: none;
+  box-shadow: var(--shadow-sm);
+}
+
+/* pair wrapper */
+.qa-pair {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+  border-radius: var(--radius);
+  transition: background 0.2s, padding 0.25s;
+}
+
+/* select mode: make pairs clickable with left space for checkbox */
+.qa-select-mode .qa-pair {
+  padding: 10px 10px 10px 38px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.qa-select-mode .qa-pair:hover {
+  background: var(--brand-soft);
+}
+
+.qa-select-mode .qa-pair.selected {
+  background: rgba(90, 138, 106, 0.08);
+}
+
+/* checkbox mark */
+.qa-check {
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 2px solid var(--line);
+  background: var(--panel);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.qa-check .icon {
+  width: 13px;
+  height: 13px;
+  color: white;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.qa-pair.selected .qa-check {
+  border-color: var(--brand);
+  background: var(--brand);
+}
+
+.qa-pair.selected .qa-check .icon { opacity: 1; }
+
+/* select bar — sits between result-area and input-container */
+.qa-select-bar {
+  flex-shrink: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: var(--panel);
+  border-top: 1px solid var(--line);
+  box-shadow: 0 -2px 8px rgba(31, 27, 46, 0.06);
+}
+
+.qa-select-count {
+  font-family: var(--wenkai);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--brand);
+}
+
+.qa-select-actions { display: flex; gap: 6px; }
+
 /* Markdown-like styling */
 .result-text strong { color: var(--brand); }
 .result-text code {

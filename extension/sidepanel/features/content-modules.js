@@ -2,6 +2,7 @@ import { includePageContent, expandContentPanelBtn, selectAllModulesBtn, clearMo
 import { getCurrentPageData, setCurrentPageDataRaw, getContentModules, setContentModules, getSelectedModuleIds, setSelectedModuleIds, getActiveFullContentModuleId } from "../lib/state.js";
 import { normalizePanelText, makePanelPreview } from "../lib/text-utils.js";
 import { openFullContent, resetFullContentState } from "./full-content.js";
+import { pmConfirm } from "./modal.js";
 
 function normalizeContentModules(pageData) {
   const modules = Array.isArray(pageData?.contentModules) ? pageData.contentModules : [];
@@ -83,7 +84,8 @@ export function getSelectedContentLength() {
   return getSelectedModules().reduce((sum, module) => sum + (module.content?.length || 0), 0);
 }
 
-export function removeContentModule(moduleId) {
+export async function removeContentModule(moduleId) {
+  if (!await pmConfirm("删除这个内容模块？", { message: "删除后需要重新获取", confirmText: "删除" })) return;
   const contentModules = getContentModules();
   const selectedModuleIds = getSelectedModuleIds();
   setContentModules(contentModules.filter((module) => module.id !== moduleId));

@@ -1,6 +1,7 @@
 import { promptInput } from "../lib/dom-refs.js";
 import { getSavedPrompts, setSavedPrompts, getEditingPromptId, setEditingPromptId } from "../lib/state.js";
 import { openDrawerById, closeAllDrawers } from "./drawers.js";
+import { pmAlert, pmConfirm } from "./modal.js";
 
 let promptDragState = null;
 let promptDragRafPending = false;
@@ -40,20 +41,20 @@ export function renderPromptList() {
     card.innerHTML = `
       <div class="prompt-card-body">
         <div class="prompt-card-main">
-          <div class="prompt-card-header">
-            <div class="prompt-card-name">${prompt.name || "未命名"}</div>
-            <div class="prompt-card-actions">
-              <button class="mini-btn edit-btn" title="编辑">
-                <svg class="icon" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                <span>编辑</span>
-              </button>
-              <button class="mini-btn delete-btn subtle-danger" title="删除">
-                <svg class="icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                <span>删除</span>
-              </button>
-            </div>
-          </div>
+          <div class="prompt-card-name">${prompt.name || "未命名"}</div>
           <div class="prompt-card-preview">${prompt.text}</div>
+        </div>
+      </div>
+      <div class="prompt-card-right">
+        <div class="prompt-card-actions">
+          <button class="mini-btn edit-btn" title="编辑">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+            <span>编辑</span>
+          </button>
+          <button class="mini-btn delete-btn subtle-danger" title="删除">
+            <svg class="icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            <span>删除</span>
+          </button>
         </div>
         <button class="prompt-drag-handle" type="button" title="拖拽调整模板位置" aria-label="拖拽调整模板位置">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -359,7 +360,7 @@ export async function savePrompt() {
   const name = document.getElementById("promptNameInput").value.trim();
   const text = document.getElementById("promptTextInput").value.trim();
 
-  if (!text) { alert("请填写提示词内容"); return; }
+  if (!text) { pmAlert("请填写提示词内容", "模板内容不能为空"); return; }
 
   const savedPrompts = getSavedPrompts();
   const editingPromptId = getEditingPromptId();
@@ -378,7 +379,7 @@ export async function savePrompt() {
 }
 
 export async function deletePrompt(id) {
-  if (!confirm("确定要删除这个提示词模板吗？")) return;
+  if (!await pmConfirm("删除这个模板？", { message: "删除后无法恢复", confirmText: "删除" })) return;
 
   const savedPrompts = getSavedPrompts();
   setSavedPrompts(savedPrompts.filter((p) => p.id !== id));

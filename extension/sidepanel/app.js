@@ -23,6 +23,7 @@ import { closeFullContent, setFullContentAction, rememberFullContentSelection, r
 import { saveHistoryRecord, openHistoryDrawer, handleHistorySearchInput, clearHistoryRecords, createNewSession, ensureActiveSession, initHistory } from "./features/history.js";
 import { renderLoading, renderUserQuestion, renderError, renderResult } from "./features/results.js";
 import { checkBridge, refreshPageInfo, buildSelectedPageContent, ensureCurrentPageData } from "./features/page-bridge.js";
+import { pmConfirm } from "./features/modal.js";
 import { initGoogleDocsExport } from "./features/google-docs-export.js";
 
 export function resizePromptInput() {
@@ -161,8 +162,8 @@ closeEditorBtn.addEventListener("click", () => openDrawerById("promptDrawer"));
 closeHistoryDrawerBtn.addEventListener("click", () => closeDrawer(historyDrawer));
 historySearchInput.addEventListener("input", handleHistorySearchInput);
 
-clearHistoryBtn.addEventListener("click", () => {
-  if (confirm("清空全部会话？")) {
+clearHistoryBtn.addEventListener("click", async () => {
+  if (await pmConfirm("清空全部会话？", { message: "所有会话记录将被永久删除", confirmText: "全部清空" })) {
     clearHistoryRecords();
   }
 });
@@ -179,6 +180,14 @@ newSessionBtn.addEventListener("click", async () => {
 });
 
 drawerOverlay.addEventListener("click", () => {
+  // If fullContentViewer is open, save and return to content preview instead of main interface
+  const fullViewer = document.getElementById("fullContentViewer");
+  if (fullViewer?.classList.contains("active")) {
+    closeFullContent({ save: true });
+    renderContentModules();
+    openDrawerById("contentPreviewPanel");
+    return;
+  }
   closeAllDrawers({ includePinned: false });
 });
 
@@ -228,15 +237,18 @@ selectAllModulesBtn.addEventListener("click", () => {
   renderContentModules();
 });
 
-clearModulesBtn.addEventListener("click", () => {
-  setSelectedModuleIds(new Set());
-  renderContentModules();
+clearModulesBtn.addEventListener("click", async () => {
+  if (await pmConfirm("取消选择全部内容？", { message: "发送时将不附带任何网页内容", confirmText: "确认清除", icon: "warning", danger: false })) {
+    setSelectedModuleIds(new Set());
+    renderContentModules();
+  }
 });
 
 closePreviewBtn.addEventListener("click", () => closeDrawer(contentPreviewPanel));
 
 closeFullContentBtn.addEventListener("click", () => {
   closeFullContent({ save: true });
+  renderContentModules();
   openDrawerById("contentPreviewPanel");
 });
 

@@ -112,6 +112,13 @@
 .history-item-title {
   min-width: 0;
   flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+}
+
+.history-title-text {
   color: var(--ink);
   font-family: var(--wenkai);
   font-size: 15px;
@@ -119,6 +126,25 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.history-item-title .rename-btn {
+  flex-shrink: 0;
+}
+
+.history-rename-input {
+  width: 100%;
+  height: 26px;
+  padding: 0 8px;
+  border: 1px solid var(--brand);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--ink);
+  font-family: var(--wenkai);
+  font-size: 14px;
+  font-weight: 600;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(90, 138, 106, 0.1);
 }
 
 .history-provider {

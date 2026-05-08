@@ -1,6 +1,7 @@
 import { resultArea, historyList, historyCount, clearHistoryBtn, historySearchInput } from "../lib/dom-refs.js";
-import { renderUserQuestion, renderResult } from "./results.js";
+import { renderUserQuestion, renderResult, initQaSelectToggle } from "./results.js";
 import { openDrawerById } from "./drawers.js";
+import { pmConfirm } from "./modal.js";
 
 const SESSION_STORAGE_KEY = "aiWebAssistant.sessions.v1";
 const LEGACY_HISTORY_STORAGE_KEY = "aiWebAssistant.history.v1";
@@ -228,7 +229,39 @@ async function switchSession(sessionId) {
   renderSessionList();
 }
 
+function startRenameSession(session, titleEl, titleText, renameBtn) {
+  const oldName = session.title || "未命名会话";
+  const input = document.createElement("input");
+  input.className = "history-rename-input";
+  input.type = "text";
+  input.value = oldName;
+  input.spellcheck = false;
+
+  titleText.style.display = "none";
+  renameBtn.style.display = "none";
+  titleEl.appendChild(input);
+  input.focus();
+  input.select();
+
+  const commit = async () => {
+    const newName = input.value.trim() || oldName;
+    session.title = newName;
+    titleText.textContent = newName;
+    titleText.style.display = "";
+    renameBtn.style.display = "";
+    input.remove();
+    await persistSessions();
+  };
+
+  input.addEventListener("blur", commit, { once: true });
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") { e.preventDefault(); input.blur(); }
+    if (e.key === "Escape") { input.value = oldName; input.blur(); }
+  });
+}
+
 async function deleteSession(sessionId) {
+  if (!await pmConfirm("删除这个会话？", { message: "该会话的所有问答记录将被删除", confirmText: "删除" })) return;
   sessions = sessions.filter((session) => session.id !== sessionId);
   if (activeSessionId === sessionId) {
     activeSessionId = sessions[0]?.id || "";
@@ -306,6 +339,7 @@ export function renderActiveSession() {
       contentCharCount: message.contentCharCount,
     });
   }
+  initQaSelectToggle();
   resultArea.scrollTo({ top: resultArea.scrollHeight });
 }
 
@@ -364,8 +398,23 @@ function createSessionItem(session) {
 
   const title = document.createElement("div");
   title.className = "history-item-title";
-  title.textContent = session.title || "未命名会话";
-  title.title = session.title || "";
+
+  const titleText = document.createElement("span");
+  titleText.className = "history-title-text";
+  titleText.textContent = session.title || "未命名会话";
+
+  const renameBtn = document.createElement("button");
+  renameBtn.className = "mini-btn rename-btn";
+  renameBtn.type = "button";
+  renameBtn.title = "修改会话标题";
+  renameBtn.innerHTML = '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"></path></svg><span>重命名</span>';
+  renameBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    startRenameSession(session, title, titleText, renameBtn);
+  });
+
+  title.appendChild(titleText);
+  title.appendChild(renameBtn);
 
   const count = document.createElement("span");
   count.className = "history-provider";
@@ -388,6 +437,7 @@ function createSessionItem(session) {
   const switchBtn = document.createElement("button");
   switchBtn.className = "mini-btn primary";
   switchBtn.type = "button";
+  switchBtn.title = session.id === activeSessionId ? "已是当前会话" : "切换到此会话";
   switchBtn.textContent = session.id === activeSessionId ? "当前会话" : "切换";
   switchBtn.disabled = session.id === activeSessionId;
   switchBtn.addEventListener("click", () => switchSession(session.id));
@@ -395,15 +445,25 @@ function createSessionItem(session) {
   const copyBtn = document.createElement("button");
   copyBtn.className = "mini-btn";
   copyBtn.type = "button";
+  copyBtn.title = session.messages?.length ? "复制会话全部内容到剪贴板" : "会话暂无内容";
   copyBtn.textContent = "复制全部";
   copyBtn.disabled = !session.messages?.length;
-  copyBtn.addEventListener("click", () => {
-    navigator.clipboard.writeText(formatSessionText(session));
+  copyBtn.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(formatSessionText(session));
+      copyBtn.textContent = "已复制 ✓";
+      copyBtn.classList.add("primary");
+      setTimeout(() => { copyBtn.textContent = "复制全部"; copyBtn.classList.remove("primary"); }, 1500);
+    } catch {
+      copyBtn.textContent = "复制失败";
+      setTimeout(() => { copyBtn.textContent = "复制全部"; }, 1500);
+    }
   });
 
   const deleteBtn = document.createElement("button");
   deleteBtn.className = "mini-btn subtle-danger";
   deleteBtn.type = "button";
+  deleteBtn.title = "删除此会话";
   deleteBtn.textContent = "删除";
   deleteBtn.addEventListener("click", () => deleteSession(session.id));
 

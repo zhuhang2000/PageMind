@@ -65,7 +65,7 @@ export function renderResult(summary, isSelection, context = {}) {
         </button>
       </div>
     </div>
-    <div class="result-text">${escapeHtml(summary)}</div>
+    <div class="result-text" spellcheck="false">${escapeHtml(summary)}</div>
     <button class="result-expand-btn" type="button" style="display:none">
       <span>展开</span>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
@@ -86,6 +86,14 @@ export function renderResult(summary, isSelection, context = {}) {
         : ""
     }
   `;
+
+  // Store context for multi-select export
+  card._qaExport = {
+    question: context.question || "",
+    content: submittedContent,
+    title: context.title || lastResult?.title || "",
+    url: context.url || lastResult?.url || "",
+  };
 
   resultArea.appendChild(card);
 
@@ -111,15 +119,16 @@ export function renderResult(summary, isSelection, context = {}) {
   const resultText = card.querySelector(".result-text");
   const expandBtn = card.querySelector(".result-expand-btn");
   requestAnimationFrame(() => {
-    const lineH = parseFloat(getComputedStyle(resultText).lineHeight) || 25;
-    if (resultText.scrollHeight > lineH * 7) {
-      resultText.classList.add("clamped");
+    resultText.classList.add("clamped");
+    if (resultText.scrollHeight > resultText.clientHeight + 1) {
       expandBtn.style.display = "";
       expandBtn.addEventListener("click", () => {
         const isClamped = resultText.classList.toggle("clamped");
         expandBtn.classList.toggle("expanded", !isClamped);
         expandBtn.querySelector("span").textContent = isClamped ? "展开" : "收起";
       });
+    } else {
+      resultText.classList.remove("clamped");
     }
   });
 
@@ -189,4 +198,171 @@ function openSubmittedContentViewer({ title, url, question, content, contentChar
   submittedContentQuestion.textContent = question || "无问题";
   submittedContentText.textContent = content || "";
   openDrawerById("submittedContentViewer");
+}
+
+// ── Multi-select Q&A for export ──────────────────────────────────────
+
+let qaSelectActive = false;
+let qaBar = null;
+
+export function initQaSelectToggle() {
+  qaSelectActive = false;
+  if (!resultArea.querySelector(".result-card")) return;
+
+  const btn = document.createElement("button");
+  btn.className = "qa-select-toggle";
+  btn.title = "多选对话记录，复制导出到其他 AI";
+  btn.innerHTML =
+    '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="6" height="6" rx="1"/><path d="M12 7h8"/><rect x="3" y="13" width="6" height="6" rx="1"/><path d="M12 15h8"/></svg><span>多选导出</span>';
+  btn.addEventListener("click", () => (qaSelectActive ? qaExit() : qaEnter()));
+  resultArea.prepend(btn);
+}
+
+function qaEnter() {
+  qaSelectActive = true;
+  resultArea.classList.add("qa-select-mode");
+
+  const toggle = resultArea.querySelector(".qa-select-toggle");
+  if (toggle) {
+    toggle.querySelector("span").textContent = "取消";
+    toggle.classList.add("active");
+  }
+
+  // Wrap consecutive question → answer into .qa-pair
+  const nodes = [...resultArea.children];
+  for (let i = 0; i < nodes.length; i++) {
+    const el = nodes[i];
+    if (!el.classList.contains("user-question-card")) continue;
+    const next = el.nextElementSibling;
+    if (!next || !next.classList.contains("result-card")) continue;
+    const wrap = document.createElement("div");
+    wrap.className = "qa-pair";
+    el.before(wrap);
+    wrap.appendChild(el);
+    wrap.appendChild(next);
+    const mark = document.createElement("div");
+    mark.className = "qa-check";
+    mark.innerHTML = '<svg class="icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>';
+    wrap.prepend(mark);
+  }
+
+  resultArea.addEventListener("click", qaHandleClick);
+  qaShowBar();
+}
+
+function qaExit() {
+  qaSelectActive = false;
+  resultArea.classList.remove("qa-select-mode");
+  resultArea.removeEventListener("click", qaHandleClick);
+
+  const toggle = resultArea.querySelector(".qa-select-toggle");
+  if (toggle) {
+    toggle.querySelector("span").textContent = "多选";
+    toggle.classList.remove("active");
+  }
+
+  resultArea.querySelectorAll(".qa-pair").forEach((p) => {
+    p.querySelector(".qa-check")?.remove();
+    while (p.firstChild) p.before(p.firstChild);
+    p.remove();
+  });
+
+  qaHideBar();
+}
+
+function qaHandleClick(e) {
+  const pair = e.target.closest(".qa-pair");
+  if (!pair) return;
+  if (e.target.closest("button, a, details, input, label, .result-actions, .submitted-content-preview, .result-expand-btn")) return;
+  pair.classList.toggle("selected");
+  qaUpdateBar();
+}
+
+function qaShowBar() {
+  if (qaBar) return;
+  qaBar = document.createElement("div");
+  qaBar.className = "qa-select-bar";
+  qaBar.innerHTML = `
+    <span class="qa-select-count">已选 0 条</span>
+    <div class="qa-select-actions">
+      <button class="mini-btn" data-qa="all">全选</button>
+      <button class="mini-btn primary" data-qa="copy" disabled>复制选中</button>
+    </div>`;
+  qaBar.addEventListener("click", (e) => {
+    const action = e.target.closest("[data-qa]")?.dataset.qa;
+    if (action === "all") qaToggleAll();
+    if (action === "copy") qaCopy();
+  });
+  resultArea.after(qaBar);
+}
+
+function qaHideBar() {
+  qaBar?.remove();
+  qaBar = null;
+}
+
+function qaUpdateBar() {
+  if (!qaBar) return;
+  const total = resultArea.querySelectorAll(".qa-pair").length;
+  const count = resultArea.querySelectorAll(".qa-pair.selected").length;
+  qaBar.querySelector(".qa-select-count").textContent = `已选 ${count} 条`;
+  qaBar.querySelector('[data-qa="copy"]').disabled = count === 0;
+  qaBar.querySelector('[data-qa="all"]').textContent = count === total ? "取消全选" : "全选";
+}
+
+function qaToggleAll() {
+  const pairs = resultArea.querySelectorAll(".qa-pair");
+  const allOn = resultArea.querySelectorAll(".qa-pair.selected").length === pairs.length;
+  pairs.forEach((p) => (allOn ? p.classList.remove("selected") : p.classList.add("selected")));
+  qaUpdateBar();
+}
+
+function qaCopy() {
+  const selected = [...resultArea.querySelectorAll(".qa-pair.selected")];
+  if (!selected.length) return;
+
+  // Collect Q&A pairs
+  const qaParts = [];
+  const seenContent = new Set();
+  const contentBlocks = [];
+  let pageTitle = "";
+  let pageUrl = "";
+
+  for (const pair of selected) {
+    const q = pair.querySelector(".user-question-text")?.textContent?.trim() || "";
+    const a = pair.querySelector(".result-text")?.textContent?.trim() || "";
+    qaParts.push(`问：${q}\n答：${a}`);
+
+    // Collect unique webpage content
+    const card = pair.querySelector(".result-card");
+    const exported = card?._qaExport;
+    if (exported) {
+      if (!pageTitle && exported.title) pageTitle = exported.title;
+      if (!pageUrl && exported.url) pageUrl = exported.url;
+      const content = exported.content?.trim();
+      if (content && !seenContent.has(content)) {
+        seenContent.add(content);
+        contentBlocks.push(content);
+      }
+    }
+  }
+
+  // Build final text: header + content + Q&A
+  const sections = [];
+  if (pageTitle) sections.push(`网页标题：${pageTitle}`);
+  if (pageUrl) sections.push(`网页链接：${pageUrl}`);
+  if (contentBlocks.length) {
+    sections.push(`网页内容：\n${contentBlocks.join("\n\n")}`);
+  }
+  sections.push(qaParts.join("\n\n---\n\n"));
+
+  const text = sections.join("\n\n");
+
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = qaBar?.querySelector('[data-qa="copy"]');
+    if (btn) {
+      btn.textContent = "已复制 ✓";
+      setTimeout(() => { btn.textContent = "复制选中"; }, 1500);
+    }
+  });
 }

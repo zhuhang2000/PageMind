@@ -104,7 +104,7 @@
 }
 
 .prompt-card {
-  padding: 12px 48px 12px 12px;
+  padding: 12px;
   cursor: pointer;
   transition:
     transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1),
@@ -112,10 +112,9 @@
     background 0.2s,
     box-shadow 0.2s,
     opacity 0.2s;
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 12px;
-  align-items: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   position: relative;
 }
 
@@ -149,20 +148,10 @@
 }
 
 .prompt-card-body {
-  min-width: 0;
-}
-
-.prompt-card-main {
+  flex: 1;
   min-width: 0;
   display: grid;
   gap: 4px;
-}
-
-.prompt-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
 }
 
 .prompt-card-name {
@@ -176,9 +165,16 @@
   white-space: nowrap;
 }
 
+.prompt-card-right {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .prompt-card-actions {
   display: flex;
-  gap: 4px;
+  gap: 2px;
   opacity: 0;
   transition: opacity 0.2s;
 }
@@ -199,12 +195,8 @@
 }
 
 .prompt-drag-handle {
-  position: absolute;
-  right: 13px;
-  top: 50%;
   width: 28px;
-  height: 48px;
-  transform: translateY(-50%);
+  height: 36px;
   padding: 0;
   border: 1px solid transparent;
   border-radius: var(--radius-full);

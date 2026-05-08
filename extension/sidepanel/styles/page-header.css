@@ -132,17 +132,18 @@
 
 .context-action {
   min-height: 24px;
-  padding: 4px 8px;
-  border: none;
-  border-radius: 4px;
-  background: rgba(200, 154, 107, 0.08);
-  color: var(--warm);
-  font-family: var(--mono);
-  font-size: 10px;
-  font-weight: 500;
+  padding: 4px 10px;
+  border: 1px solid var(--brand);
+  border-radius: var(--radius-full);
+  background: var(--brand);
+  color: #ffffff;
+  font-family: var(--wenkai);
+  font-size: 11px;
+  font-weight: 600;
   line-height: 1;
   white-space: nowrap;
   flex-shrink: 0;
+  box-shadow: 0 1px 4px rgba(90, 138, 106, 0.25);
 }
 
 .context-state-selected {
@@ -166,8 +167,10 @@
 }
 
 .context-state-unselected .context-action {
-  background: rgba(201, 100, 66, 0.08);
-  color: var(--danger);
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #ffffff;
+  box-shadow: 0 1px 4px rgba(201, 100, 66, 0.25);
 }
 
 .context-state-empty {
@@ -186,8 +189,10 @@
 }
 
 .context-state-empty .context-action {
-  background: transparent;
+  background: var(--bg-deep);
+  border-color: var(--line);
   color: var(--muted);
+  box-shadow: none;
 }
 
 /* Status Indicator Dots */

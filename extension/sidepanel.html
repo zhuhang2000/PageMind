@@ -24,6 +24,7 @@
   <link rel="stylesheet" href="sidepanel/styles/drawer.css" />
   <link rel="stylesheet" href="sidepanel/styles/scrollbar.css" />
   <link rel="stylesheet" href="sidepanel/styles/tooltip.css" />
+  <link rel="stylesheet" href="sidepanel/styles/modal.css" />
 </head>
 <body>
 
@@ -93,7 +94,7 @@
   <div class="input-card">
     <div class="input-main-row">
       <div class="input-wrapper">
-        <textarea id="promptInput" rows="1" placeholder="继续追问 PageMind…"></textarea>
+        <textarea id="promptInput" rows="1" placeholder="继续追问 PageMind…" spellcheck="false"></textarea>
       </div>
 
       <button class="send-btn" id="summarizeBtn" title="发送">
@@ -107,15 +108,15 @@
           <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
         </button>
         <div class="attachment-menu" id="attachmentMenu">
-          <button class="menu-item" id="addImageBtn">
+          <button class="menu-item" id="addImageBtn" title="上传图片作为附件">
             <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
             上传图片
           </button>
-          <button class="menu-item" id="captureSnipBtn">
+          <button class="menu-item" id="captureSnipBtn" title="截取屏幕区域进行识别">
             <svg class="icon" viewBox="0 0 24 24"><path d="M7 3H5a2 2 0 0 0-2 2v2"></path><path d="M17 3h2a2 2 0 0 1 2 2v2"></path><path d="M21 17v2a2 2 0 0 1-2 2h-2"></path><path d="M7 21H5a2 2 0 0 1-2-2v-2"></path><path d="M8 12h8"></path><path d="M12 8v8"></path></svg>
             截屏识别
           </button>
-          <button class="menu-item" id="toggleContextBtn">
+          <button class="menu-item" id="toggleContextBtn" title="附带当前网页内容">
             <svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
             网页内容
           </button>
@@ -153,7 +154,7 @@
         <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18"></path><path d="M6 6l12 12"></path></svg>
         <span>清空</span>
       </button>
-      <button class="close-drawer-btn" id="closeHistoryDrawerBtn">&times;</button>
+      <button class="close-drawer-btn" id="closeHistoryDrawerBtn" title="关闭">&times;</button>
     </div>
   </div>
   <div class="drawer-content history-drawer-content">
@@ -170,7 +171,7 @@
         <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
         <span>新增</span>
       </button>
-      <button class="close-drawer-btn" id="closePromptDrawerBtn">&times;</button>
+      <button class="close-drawer-btn" id="closePromptDrawerBtn" title="关闭">&times;</button>
     </div>
   </div>
   <div class="drawer-content">
@@ -183,7 +184,7 @@
 <div class="drawer-panel" id="promptEditorDrawer">
   <div class="drawer-header">
     <h3 id="editorTitle">新增模板</h3>
-    <button class="close-drawer-btn" id="closeEditorBtn">&times;</button>
+    <button class="close-drawer-btn" id="closeEditorBtn" title="关闭">&times;</button>
   </div>
   <div class="drawer-content">
     <div class="prompt-editor-form">
@@ -193,7 +194,7 @@
       </div>
       <div class="prompt-field">
         <span>提示词内容</span>
-        <textarea id="promptTextInput" placeholder="输入提示词内容..."></textarea>
+        <textarea id="promptTextInput" placeholder="输入提示词内容..." spellcheck="false"></textarea>
       </div>
       <div class="prompt-editor-actions">
         <button class="prompt-icon-btn danger" id="deletePromptBtn" title="删除模板">
@@ -221,7 +222,7 @@
         <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18"></path><path d="M6 6l12 12"></path></svg>
         <span>清除</span>
       </button>
-      <button class="close-drawer-btn" id="closePreviewBtn">&times;</button>
+      <button class="close-drawer-btn" id="closePreviewBtn" title="关闭">&times;</button>
     </div>
   </div>
   <div class="drawer-content">
@@ -254,7 +255,7 @@
   </div>
   <div class="full-content-selection-status" id="fullContentSelectionStatus">
     <span id="fullContentSelectionText">未选择片段</span>
-    <button class="selection-apply-btn" id="applyFullContentSelectionsBtn" type="button" disabled>
+    <button class="selection-apply-btn" id="applyFullContentSelectionsBtn" type="button" title="执行摘录操作" disabled>
       <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
       <span>执行</span>
     </button>
@@ -272,7 +273,7 @@
       <h3 id="submittedContentTitle">提交内容</h3>
       <div class="full-content-meta" id="submittedContentMeta">—</div>
     </div>
-    <button class="close-drawer-btn" id="closeSubmittedContentBtn">&times;</button>
+    <button class="close-drawer-btn" id="closeSubmittedContentBtn" title="关闭">&times;</button>
   </div>
   <div class="drawer-content submitted-content-viewer-content">
     <div class="submitted-question-block">

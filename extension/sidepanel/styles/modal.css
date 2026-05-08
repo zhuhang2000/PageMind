@@ -1,0 +1,174 @@
+/* PageMind Modal — paper + sage theme */
+.pm-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(31, 27, 46, 0);
+  backdrop-filter: blur(0);
+  -webkit-backdrop-filter: blur(0);
+  transition: background 240ms ease, backdrop-filter 240ms ease, -webkit-backdrop-filter 240ms ease;
+  pointer-events: none;
+}
+
+.pm-modal-overlay.visible {
+  background: rgba(31, 27, 46, 0.25);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  pointer-events: auto;
+}
+
+.pm-modal {
+  width: calc(100% - 48px);
+  max-width: 340px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    0 20px 60px rgba(31, 27, 46, 0.18),
+    0 4px 16px rgba(31, 27, 46, 0.08);
+  padding: 28px 24px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  opacity: 0;
+  transform: scale(0.92) translateY(8px);
+  transition: opacity 220ms ease, transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.pm-modal.visible {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+
+/* Icon */
+.pm-modal-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 6px;
+  flex-shrink: 0;
+}
+
+.pm-modal-icon svg {
+  width: 22px;
+  height: 22px;
+  stroke-width: 1.8;
+  stroke: currentColor;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.pm-modal-icon.danger {
+  background: rgba(201, 100, 66, 0.1);
+  color: var(--danger);
+}
+
+.pm-modal-icon.warning {
+  background: rgba(200, 154, 107, 0.15);
+  color: var(--warm);
+}
+
+.pm-modal-icon.info {
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+
+.pm-modal-icon.success {
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+
+/* Title */
+.pm-modal-title {
+  font-family: var(--wenkai);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* Message */
+.pm-modal-message {
+  font-family: var(--wenkai);
+  font-size: 13.5px;
+  color: var(--ink-soft);
+  text-align: center;
+  line-height: 1.6;
+  margin-top: 2px;
+}
+
+/* Actions */
+.pm-modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+  width: 100%;
+}
+
+.pm-modal-btn {
+  flex: 1;
+  height: 40px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  color: var(--ink-soft);
+  font-family: var(--wenkai);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pm-modal-btn:hover {
+  background: var(--bg-deep);
+  color: var(--ink);
+}
+
+.pm-modal-btn:active {
+  transform: scale(0.97);
+}
+
+.pm-modal-btn.primary {
+  border-color: var(--brand);
+  background: var(--brand);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(90, 138, 106, 0.25);
+}
+
+.pm-modal-btn.primary:hover {
+  background: var(--brand-hover);
+  border-color: var(--brand-hover);
+}
+
+.pm-modal-btn.primary.danger {
+  border-color: var(--danger);
+  background: var(--danger);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(201, 100, 66, 0.25);
+}
+
+.pm-modal-btn.primary.danger:hover {
+  background: #b55638;
+  border-color: #b55638;
+}
+
+.pm-modal-btn:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+.pm-modal-btn.primary.danger:focus-visible {
+  outline-color: var(--danger);
+}
