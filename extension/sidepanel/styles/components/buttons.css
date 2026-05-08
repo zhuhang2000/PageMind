@@ -1,14 +1,14 @@
-/* Shared button primitives and recurring action buttons. */
+/* Buttons — PageMind paper + sage */
 button {
   border: none;
   border-radius: var(--radius);
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 500;
   transition: all 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 button:disabled {
@@ -21,7 +21,7 @@ button:disabled {
   height: 42px;
   background: var(--brand);
   color: white;
-  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
+  box-shadow: 0 2px 6px rgba(90, 138, 106, 0.25);
 }
 
 .btn-primary:hover:not(:disabled) {
@@ -37,7 +37,7 @@ button:disabled {
   padding: 0 16px;
   height: 42px;
   background: var(--panel);
-  color: var(--muted);
+  color: var(--ink-soft);
   border: 1px solid var(--line);
 }
 
@@ -51,11 +51,11 @@ button:disabled {
   min-height: 28px;
   padding: 0 9px;
   border: 1px solid transparent;
-  border-radius: var(--radius-full);
+  border-radius: 5px;
   background: transparent;
   color: var(--muted);
-  font-size: 12px;
-  font-weight: 650;
+  font-size: 11px;
+  font-weight: 500;
   line-height: 1;
   display: inline-flex;
   align-items: center;
@@ -65,21 +65,21 @@ button:disabled {
 }
 
 .drawer-pin-btn {
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .mini-btn .icon,
 .drawer-pin-btn .icon {
-  width: 14px;
-  height: 14px;
+  width: 13px;
+  height: 13px;
 }
 
 .mini-btn:hover:not(:disabled),
 .mini-btn.primary,
 .drawer-pin-btn:hover,
 .drawer-pin-btn.active {
-  border-color: #bfdbfe;
-  background: #eff6ff;
+  border-color: var(--brand-soft);
+  background: var(--brand-soft);
   color: var(--brand);
 }
 
@@ -90,18 +90,18 @@ button:disabled {
 }
 
 .mini-btn.subtle-danger:hover:not(:disabled) {
-  border-color: #fecaca;
-  background: #fff5f5;
+  border-color: rgba(201, 100, 66, 0.2);
+  background: rgba(201, 100, 66, 0.06);
   color: var(--danger);
 }
 
 .close-drawer-btn {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: var(--bg);
-  color: var(--muted);
-  font-size: 20px;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  background: var(--bg-deep);
+  color: var(--ink-soft);
+  font-size: 18px;
   line-height: 1;
 }
 
@@ -111,32 +111,29 @@ button:disabled {
 }
 
 .icon-action-btn {
-  width: 36px;
-  height: 36px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 5px;
   padding: 0;
-  background: var(--bg);
+  background: transparent;
   color: var(--muted);
   display: inline-flex;
 }
 
 .icon-action-btn:hover:not(:disabled) {
-  border-color: var(--brand);
   background: var(--brand-soft);
   color: var(--brand);
 }
 
 .icon-action-btn.active {
-  border-color: var(--brand);
   background: var(--brand);
   color: white;
 }
 
 .icon-action-btn.danger:hover:not(:disabled),
 .icon-action-btn.danger.active {
-  border-color: #fecaca;
-  background: #fff5f5;
+  background: rgba(201, 100, 66, 0.06);
   color: var(--danger);
 }
 
@@ -155,21 +152,40 @@ button:disabled {
 }
 
 .mini-action-btn svg {
-  width: 14px;
-  height: 14px;
+  width: 13px;
+  height: 13px;
 }
 
+/* Ghost buttons (toolbar) */
 .attachment-btn,
-.prompt-drawer-btn,
 .content-fetch-btn {
   min-height: 28px;
-  padding: 0 10px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-full);
-  background: var(--panel);
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 700;
+  padding: 5px 8px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink-soft);
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.prompt-drawer-btn {
+  min-height: 28px;
+  padding: 5px 8px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink-soft);
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 500;
   line-height: 1;
   white-space: nowrap;
   display: inline-flex;
@@ -181,25 +197,25 @@ button:disabled {
 .attachment-btn,
 .prompt-drawer-btn {
   height: 28px;
-  font-size: 11px;
 }
 
 .content-fetch-btn {
-  padding: 4px 10px;
-  background: var(--bg);
-  color: var(--brand);
+  padding: 7px 11px;
+  border-radius: 7px;
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 11.5px;
+  font-weight: 500;
 }
 
 .attachment-btn:hover,
-.prompt-drawer-btn:hover,
-.content-fetch-btn:hover:not(:disabled) {
-  border-color: var(--brand);
-  background: var(--brand-soft);
-  color: var(--brand);
+.prompt-drawer-btn:hover {
+  background: var(--bg-deep);
+  color: var(--ink);
 }
 
 .content-fetch-btn:hover:not(:disabled) {
-  box-shadow: 0 4px 10px rgba(66, 133, 244, 0.12);
+  background: var(--ink-soft);
 }
 
 .content-fetch-btn:disabled {
@@ -208,15 +224,26 @@ button:disabled {
 }
 
 .content-fetch-btn .icon {
-  width: 15px;
-  height: 15px;
+  width: 12px;
+  height: 12px;
   flex-shrink: 0;
+  stroke-width: 2;
 }
 
-.prompt-drawer-btn {
-  border-color: #bfdbfe;
+/* Pill button for template drawer trigger */
+.prompt-drawer-btn:last-of-type {
   background: var(--brand-soft);
+  border: 1px solid var(--brand-soft);
   color: var(--brand);
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-weight: 500;
+}
+
+.prompt-drawer-btn:last-of-type:hover {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
 }
 
 .menu-item {
@@ -226,6 +253,7 @@ button:disabled {
   border-radius: var(--radius-sm);
   background: transparent;
   color: var(--ink);
+  font-family: var(--wenkai);
   font-size: 13px;
   text-align: left;
   display: flex;
@@ -240,8 +268,8 @@ button:disabled {
 }
 
 .menu-item svg {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   color: currentColor;
 }
 
@@ -278,7 +306,7 @@ button:disabled {
   background: transparent;
   color: var(--muted);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -292,7 +320,7 @@ button:disabled {
 }
 
 .floating-action-btn:hover:not(:disabled) {
-  border-color: #bfdbfe;
+  border-color: var(--brand-soft);
   background: var(--brand-soft);
   color: var(--brand);
 }
@@ -307,7 +335,7 @@ button:disabled {
   border-color: var(--brand);
   background: var(--brand);
   color: #ffffff;
-  box-shadow: 0 6px 14px rgba(66, 133, 244, 0.2);
+  box-shadow: 0 2px 6px rgba(90, 138, 106, 0.25);
 }
 
 .floating-action-btn.primary:hover:not(:disabled) {
@@ -315,15 +343,17 @@ button:disabled {
   background: var(--brand-hover);
 }
 
+/* Send button — sage gradient */
 .send-btn {
   width: 32px;
   height: 32px;
   border: none;
   border-radius: 50%;
-  background: var(--gemini-gradient);
+  background: var(--brand-gradient);
   color: white;
   transition: transform 0.2s, opacity 0.2s;
   flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(90, 138, 106, 0.35);
 }
 
 .send-btn:hover {
@@ -349,11 +379,11 @@ button:disabled {
 }
 
 .icon-btn-sm:hover {
-  background: var(--bg);
+  background: var(--bg-deep);
   color: var(--brand);
 }
 
 .icon-btn-sm svg {
-  width: 14px;
-  height: 14px;
+  width: 13px;
+  height: 13px;
 }

@@ -98,26 +98,44 @@ function startPromptPointerDrag(event, card) {
 
   const scrollContainer = card.closest(".drawer-content");
   const cardRect = card.getBoundingClientRect();
+  const allCards = [...list.querySelectorAll(".prompt-card")];
+  const dragIndex = allCards.indexOf(card);
+  const gap = 10; // matches CSS gap
+
+  // Collect sibling rects before any DOM changes
+  const siblings = allCards
+    .filter((c) => c !== card)
+    .map((el, i) => ({
+      el,
+      originalIndex: i >= dragIndex ? i + 1 : i,
+      rect: el.getBoundingClientRect(),
+      displaced: false,
+    }));
+
+  // Insert invisible spacer to hold the card's space in the list
+  const spacer = document.createElement("div");
+  spacer.className = "prompt-drag-spacer";
+  spacer.style.height = `${cardRect.height}px`;
+  card.replaceWith(spacer);
+
   promptDragRafPending = false;
   promptDragState = {
-    card, list, scrollContainer,
-    originalNextSibling: card.nextElementSibling,
-    originPlaceholder: createPromptOriginPlaceholder(card),
+    card, list, scrollContainer, spacer,
     startY: event.clientY, startTop: cardRect.top, startLeft: cardRect.left,
     grabOffsetY: event.clientY - cardRect.top,
-    cardHeight: cardRect.height, currentTop: cardRect.top, previousTop: cardRect.top,
-    dragDirection: 0, lastPointerY: event.clientY, autoScrollFrame: 0,
-    placeholder: createPromptDropPlaceholder(card),
-    moved: false, lastIndicatorTargetId: null, lastIndicatorInsertAfter: null,
+    cardHeight: cardRect.height, currentTop: cardRect.top,
+    lastPointerY: event.clientY, autoScrollFrame: 0,
+    moved: false,
+    siblings, dragIndex, currentIndex: dragIndex, gap,
+    initialScrollTop: scrollContainer?.scrollTop || 0,
   };
+
   card.style.left = `${cardRect.left}px`;
   card.style.top = `${cardRect.top}px`;
   card.style.width = `${cardRect.width}px`;
-  card.after(promptDragState.originPlaceholder);
   card.classList.add("dragging");
   document.body.appendChild(card);
   list.classList.add("is-sorting");
-  list.style.setProperty("--prompt-drag-space", `${card.offsetHeight + 44}px`);
   scrollContainer?.classList.add("prompt-sort-scroll-region");
 
   document.addEventListener("pointermove", handlePromptPointerMove);
@@ -140,54 +158,142 @@ function handlePromptPointerMove(event) {
 
 function applyPromptDragPosition(pointerY) {
   if (!promptDragState) return;
-  const { card, list, scrollContainer, startTop, grabOffsetY, cardHeight } = promptDragState;
-  let nextTop = pointerY - grabOffsetY;
-  if (scrollContainer) {
-    const containerRect = scrollContainer.getBoundingClientRect();
+  const s = promptDragState;
+  let nextTop = pointerY - s.grabOffsetY;
+  if (s.scrollContainer) {
+    const containerRect = s.scrollContainer.getBoundingClientRect();
     const minTop = containerRect.top + 8;
-    const maxTop = containerRect.bottom - cardHeight - 8;
+    const maxTop = containerRect.bottom - s.cardHeight - 8;
     if (maxTop > minTop) nextTop = Math.min(Math.max(nextTop, minTop), maxTop);
   }
-  if (Math.abs(nextTop - startTop) > 3) promptDragState.moved = true;
+  if (Math.abs(nextTop - s.startTop) > 3) s.moved = true;
 
-  const dy = nextTop - startTop;
-  card.style.transform = `translate3d(0, ${dy}px, 0) scale(1.015)`;
+  const dy = nextTop - s.startTop;
+  s.card.style.transform = `translate3d(0, ${dy}px, 0) scale(1.02)`;
+  s.currentTop = nextTop;
 
-  const delta = nextTop - promptDragState.currentTop;
-  if (Math.abs(delta) > 5) promptDragState.dragDirection = Math.sign(delta);
-  promptDragState.previousTop = promptDragState.currentTop;
-  promptDragState.currentTop = nextTop;
-  updatePromptDropIndicator(list, card);
+  // Edge-based hit detection: use top/bottom edges of the dragged card
+  // instead of center. Triggers swaps ~half a card height sooner → feels
+  // much more responsive and iOS-like.
+  const dragTop = s.startTop + dy;
+  const dragBottom = dragTop + s.cardHeight;
+
+  // Compensate for scroll changes since drag started
+  const scrollDelta = s.scrollContainer
+    ? s.scrollContainer.scrollTop - s.initialScrollTop
+    : 0;
+
+  let newIndex = s.dragIndex;
+  for (const sib of s.siblings) {
+    const sibMid = sib.rect.top + sib.rect.height / 2 - scrollDelta;
+    if (s.dragIndex < sib.originalIndex && dragBottom > sibMid) {
+      // Dragging downward: bottom edge past sibling midpoint → take furthest
+      newIndex = Math.max(newIndex, sib.originalIndex);
+    } else if (s.dragIndex > sib.originalIndex && dragTop < sibMid) {
+      // Dragging upward: top edge past sibling midpoint → take furthest
+      newIndex = Math.min(newIndex, sib.originalIndex);
+    }
+  }
+
+  // Update sibling transforms only when index changes
+  if (newIndex !== s.currentIndex) {
+    s.currentIndex = newIndex;
+    const shiftH = s.cardHeight + s.gap;
+    for (const sib of s.siblings) {
+      const shouldDisplace =
+        (sib.originalIndex > s.dragIndex && sib.originalIndex <= newIndex) ||
+        (sib.originalIndex < s.dragIndex && sib.originalIndex >= newIndex);
+      if (shouldDisplace && !sib.displaced) {
+        sib.el.style.transform = sib.originalIndex > s.dragIndex
+          ? `translateY(-${shiftH}px)` : `translateY(${shiftH}px)`;
+        sib.displaced = true;
+      } else if (!shouldDisplace && sib.displaced) {
+        sib.el.style.transform = "";
+        sib.displaced = false;
+      }
+    }
+  }
 }
 
 function handlePromptPointerUp() {
   if (!promptDragState) return;
-  const { card, list, scrollContainer, placeholder, originPlaceholder, originalNextSibling, moved } = promptDragState;
-  const hasPlaceholder = Boolean(placeholder?.isConnected);
+  const s = promptDragState;
 
   document.removeEventListener("pointermove", handlePromptPointerMove);
-  if (promptDragState.autoScrollFrame) cancelAnimationFrame(promptDragState.autoScrollFrame);
-  suppressPromptCardClick = moved;
+  if (s.autoScrollFrame) cancelAnimationFrame(s.autoScrollFrame);
+  suppressPromptCardClick = s.moved;
 
-  if (hasPlaceholder) {
-    const beforeRect = card.getBoundingClientRect();
-    placeholder.replaceWith(card);
-    finishFloatingPromptDrop(card, beforeRect);
-    persistPromptOrderFromDom(list);
+  // ── FLIP: First — snapshot visual positions while still in drag state ──
+  const firstPos = new Map();
+  firstPos.set(s.card, s.card.getBoundingClientRect());
+  for (const sib of s.siblings) {
+    firstPos.set(sib.el, sib.el.getBoundingClientRect());
+  }
+
+  // ── Freeze: kill ALL transitions BEFORE any DOM/transform changes ──
+  // .prompt-card base CSS has `transition: transform 220ms`, which would
+  // animate siblings back to their DOM positions when we clear their
+  // transforms. Setting transition:none prevents this flash.
+  for (const sib of s.siblings) sib.el.style.transition = "none";
+  s.card.style.transition = "none";
+
+  // ── DOM batch: rearrange everything to final state ──
+  s.list.classList.remove("is-sorting");
+  s.spacer?.remove();
+  for (const sib of s.siblings) sib.el.style.transform = "";
+  s.card.classList.remove("dragging");
+  s.card.style.left = "";
+  s.card.style.top = "";
+  s.card.style.width = "";
+  s.card.style.transform = "";
+
+  const listCards = [...s.list.querySelectorAll(".prompt-card")];
+  if (s.currentIndex >= listCards.length) {
+    s.list.appendChild(s.card);
   } else {
-    if (originalNextSibling?.isConnected && originalNextSibling.parentElement === list) {
-      list.insertBefore(card, originalNextSibling);
+    listCards[s.currentIndex].before(s.card);
+  }
+
+  // ── FLIP: Invert — measure final positions, apply compensating transforms ──
+  const allEls = [s.card, ...s.siblings.map((x) => x.el)];
+  const animating = [];
+  for (const el of allEls) {
+    const first = firstPos.get(el);
+    const last = el.getBoundingClientRect();
+    const dx = first.left - last.left;
+    const dy = first.top - last.top;
+    if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
+      el.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
+      animating.push(el);
     } else {
-      list.appendChild(card);
+      // Already in place — restore base CSS transitions
+      el.style.transition = "";
     }
   }
 
-  removePromptDropPlaceholder();
-  originPlaceholder?.remove();
-  list.classList.remove("is-sorting");
-  list.style.removeProperty("--prompt-drag-space");
-  scrollContainer?.classList.remove("prompt-sort-scroll-region");
-  if (!hasPlaceholder) clearFloatingPromptCard(card);
+  // ── FLIP: Play — animate to final layout positions ──
+  if (animating.length > 0) {
+    requestAnimationFrame(() => {
+      for (const el of animating) {
+        el.style.transition = "transform 200ms cubic-bezier(0.2, 0.8, 0.2, 1)";
+        el.style.transform = "";
+      }
+      const cleanup = () => {
+        for (const el of animating) {
+          el.style.transition = "";
+        }
+      };
+      animating[0].addEventListener("transitionend", cleanup, { once: true });
+      setTimeout(cleanup, 280);
+    });
+  }
+
+  // Persist new order
+  if (s.moved && s.currentIndex !== s.dragIndex) {
+    persistPromptOrderFromDom(s.list);
+  }
+
+  s.scrollContainer?.classList.remove("prompt-sort-scroll-region");
   promptDragState = null;
   setTimeout(() => { suppressPromptCardClick = false; }, 0);
 }
@@ -215,79 +321,8 @@ function autoScrollPromptList(pointerY) {
   }
 }
 
-function updatePromptDropIndicator(list, draggedCard) {
-  const cards = Array.from(list.querySelectorAll(".prompt-card:not(.prompt-origin-placeholder)")).filter((item) => item !== draggedCard);
-  const placeholder = promptDragState?.placeholder;
-  if (!placeholder) return;
-  if (cards.length === 0) { list.appendChild(placeholder); return; }
-
-  let target = null;
-  let insertAfter = false;
-  const dragRect = draggedCard.getBoundingClientRect();
-  const direction = promptDragState?.dragDirection || 0;
-  const probeY = direction < 0 ? dragRect.top + dragRect.height * 0.12 : dragRect.top + dragRect.height * 0.88;
-
-  for (const card of cards) {
-    const rect = card.getBoundingClientRect();
-    if (probeY < rect.top + rect.height / 2) { target = card; insertAfter = false; break; }
-    target = card;
-    insertAfter = true;
-  }
-
-  if (!target) return;
-  const targetId = target.dataset.promptId ?? null;
-  if (targetId === promptDragState.lastIndicatorTargetId && insertAfter === promptDragState.lastIndicatorInsertAfter) return;
-  promptDragState.lastIndicatorTargetId = targetId;
-  promptDragState.lastIndicatorInsertAfter = insertAfter;
-
-  if (insertAfter) target.after(placeholder);
-  else target.before(placeholder);
-}
-
-function createPromptDropPlaceholder(card) {
-  const placeholder = document.createElement("div");
-  placeholder.className = "prompt-drop-placeholder";
-  placeholder.style.minHeight = `${card.offsetHeight}px`;
-  placeholder.innerHTML = `
-    <div class="prompt-drop-placeholder-title">${card.querySelector(".prompt-card-name")?.textContent || "模板位置"}</div>
-    <div class="prompt-drop-placeholder-copy">松开后放到这里</div>
-  `;
-  return placeholder;
-}
-
-function createPromptOriginPlaceholder(card) {
-  const clone = card.cloneNode(true);
-  clone.classList.add("prompt-origin-placeholder");
-  clone.removeAttribute("data-prompt-id");
-  clone.removeAttribute("data-prompt-index");
-  clone.querySelectorAll("button").forEach((button) => { button.disabled = true; button.setAttribute("tabindex", "-1"); });
-  return clone;
-}
-
-function removePromptDropPlaceholder() { promptDragState?.placeholder?.remove(); }
-
-function finishFloatingPromptDrop(card, beforeRect) {
-  card.classList.remove("dragging");
-  card.style.left = ""; card.style.top = ""; card.style.width = ""; card.style.transform = ""; card.style.transition = "none";
-  const afterRect = card.getBoundingClientRect();
-  const deltaY = beforeRect.top - afterRect.top;
-  const deltaX = beforeRect.left - afterRect.left;
-  card.style.transform = `translate3d(${deltaX}px, ${deltaY}px, 0) scale(1.015)`;
-  requestAnimationFrame(() => {
-    card.style.transition = "transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1)";
-    card.style.transform = "";
-    card.addEventListener("transitionend", () => { card.style.transition = ""; }, { once: true });
-  });
-}
-
-function clearFloatingPromptCard(card, options = {}) {
-  card.classList.remove("dragging");
-  card.style.left = ""; card.style.top = ""; card.style.width = "";
-  if (!options.keepTransform) card.style.transform = "";
-}
-
 function persistPromptOrderFromDom(list) {
-  const ids = Array.from(list.querySelectorAll(".prompt-card:not(.prompt-origin-placeholder)"))
+  const ids = Array.from(list.querySelectorAll(".prompt-card"))
     .map((card) => card.dataset.promptId).filter(Boolean);
   const savedPrompts = getSavedPrompts();
   const byId = new Map(savedPrompts.map((prompt) => [prompt.id, prompt]));

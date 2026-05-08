@@ -66,6 +66,10 @@ export function renderResult(summary, isSelection, context = {}) {
       </div>
     </div>
     <div class="result-text">${escapeHtml(summary)}</div>
+    <button class="result-expand-btn" type="button" style="display:none">
+      <span>展开</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+    </button>
     ${
       hasSubmittedContent
         ? `<details class="submitted-content-preview">
@@ -101,6 +105,22 @@ export function renderResult(summary, isSelection, context = {}) {
       copyAnswerBtn.innerHTML = `<svg class="icon" style="color:var(--success)" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
       setTimeout(() => (copyAnswerBtn.innerHTML = originalIcon), 2000);
     });
+  });
+
+  // Expand / collapse for long answers
+  const resultText = card.querySelector(".result-text");
+  const expandBtn = card.querySelector(".result-expand-btn");
+  requestAnimationFrame(() => {
+    const lineH = parseFloat(getComputedStyle(resultText).lineHeight) || 25;
+    if (resultText.scrollHeight > lineH * 7) {
+      resultText.classList.add("clamped");
+      expandBtn.style.display = "";
+      expandBtn.addEventListener("click", () => {
+        const isClamped = resultText.classList.toggle("clamped");
+        expandBtn.classList.toggle("expanded", !isClamped);
+        expandBtn.querySelector("span").textContent = isClamped ? "展开" : "收起";
+      });
+    }
   });
 
   const submittedViewBtn = card.querySelector(".submitted-view-btn");

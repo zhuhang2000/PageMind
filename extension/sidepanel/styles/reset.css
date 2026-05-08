@@ -1,4 +1,4 @@
-/* Document reset and typography. */
+/* Document reset and typography — PageMind paper theme */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -16,11 +16,28 @@ body {
   position: relative;
   background: var(--bg);
   color: var(--ink);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
-  font-size: 14px;
-  line-height: 1.5;
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  background-image:
+    radial-gradient(circle at 20% 10%, rgba(200, 154, 107, 0.04), transparent 40%),
+    radial-gradient(circle at 80% 80%, rgba(90, 138, 106, 0.04), transparent 40%);
+  z-index: 0;
+}
+
+body > * {
+  position: relative;
+  z-index: 1;
 }
 
 textarea,

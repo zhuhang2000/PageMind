@@ -1,35 +1,54 @@
-/* Minimalist Page Header */
+/* Page Header — PageMind paper + sage */
 .page-info {
-  padding: 10px 12px 8px;
+  padding: 14px 16px 12px;
   flex-shrink: 0;
   border-bottom: 1px solid var(--line);
-  background: var(--panel);
+  background: var(--bg);
+  position: relative;
+  z-index: 2;
 }
 
 .page-info-header {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  align-items: flex-start;
+  gap: 11px;
 }
 
 .page-text { min-width: 0; flex: 1; }
 
+.page-text::before {
+  content: '当前页面';
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
 .page-title {
-  font-size: 14px;
-  font-weight: 750;
+  font-family: var(--wenkai);
+  font-size: 16px;
+  font-weight: 600;
   color: var(--ink);
+  letter-spacing: 0.01em;
+  line-height: 1.3;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .page-url {
-  font-size: 11px;
+  font-family: var(--mono);
+  font-size: 10.5px;
   color: var(--muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-top: 1px;
+  margin-top: 2px;
 }
 
 .header-actions {
@@ -39,36 +58,39 @@
   flex-shrink: 0;
 }
 
+/* Context top bar — paper bookmark ribbon */
 .context-top-bar {
   display: flex;
   align-items: stretch;
   justify-content: stretch;
   width: 100%;
-  margin-top: 9px;
+  margin-top: 12px;
 }
 
 .context-summary-btn {
   width: 100%;
   min-height: 40px;
   margin: 0;
-  padding: 7px 8px 7px 11px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--bg);
+  padding: 10px 12px;
+  border: 1px solid #e8d8a8;
+  border-left: 3px solid var(--warm);
+  border-radius: 6px;
+  background: var(--warm-soft);
   color: var(--ink);
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   text-align: left;
   overflow: hidden;
   transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  font-family: inherit;
 }
 
 .context-summary-btn:hover {
-  border-color: var(--brand);
-  background: var(--brand-soft);
-  box-shadow: 0 4px 12px rgba(66, 133, 244, 0.12);
+  border-color: var(--warm);
+  background: #fff4d6;
+  box-shadow: 0 2px 8px rgba(200, 154, 107, 0.12);
 }
 
 .context-main {
@@ -83,12 +105,14 @@
   width: 16px;
   height: 16px;
   flex-shrink: 0;
+  color: var(--warm);
 }
 
 .context-title {
-  color: inherit;
-  font-size: 13px;
-  font-weight: 800;
+  font-family: var(--wenkai);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 600;
   line-height: 1.2;
   white-space: nowrap;
 }
@@ -96,9 +120,10 @@
 .context-meta {
   min-width: 0;
   flex: 1;
-  color: #475569;
-  font-size: 13px;
-  font-weight: 700;
+  color: var(--warm);
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 500;
   line-height: 1.2;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -107,68 +132,74 @@
 
 .context-action {
   min-height: 24px;
-  padding: 0 10px;
-  border: 1px solid rgba(66, 133, 244, 0.22);
-  border-radius: var(--radius-full);
-  background: rgba(255, 255, 255, 0.72);
-  color: var(--brand);
-  font-size: 12px;
-  font-weight: 800;
-  line-height: 22px;
+  padding: 4px 8px;
+  border: none;
+  border-radius: 4px;
+  background: rgba(200, 154, 107, 0.08);
+  color: var(--warm);
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1;
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 .context-state-selected {
-  border-color: #93c5fd;
-  background: #eff6ff;
-  color: var(--brand);
+  border-color: #e8d8a8;
+  background: var(--warm-soft);
+  color: var(--ink);
 }
 
 .context-state-selected .context-meta {
-  color: #1d4ed8;
+  color: var(--warm);
 }
 
 .context-state-unselected {
-  border-color: #fed7aa;
-  background: #fff7ed;
-  color: #c2410c;
+  border-color: var(--line);
+  background: var(--bg-deep);
+  color: var(--danger);
 }
 
 .context-state-unselected .context-meta {
-  color: #9a3412;
+  color: var(--danger);
 }
 
 .context-state-unselected .context-action {
-  border-color: rgba(234, 88, 12, 0.24);
-  color: #c2410c;
+  background: rgba(201, 100, 66, 0.08);
+  color: var(--danger);
 }
 
 .context-state-empty {
   border-color: var(--line);
-  background: #f8fafc;
-  color: #64748b;
+  border-left-color: var(--line);
+  background: var(--bg);
+  color: var(--muted);
+}
+
+.context-state-empty .context-icon {
+  color: var(--muted);
 }
 
 .context-state-empty .context-meta {
-  color: #64748b;
+  color: var(--muted);
 }
 
 .context-state-empty .context-action {
-  border-color: rgba(100, 116, 139, 0.18);
-  color: #64748b;
+  background: transparent;
+  color: var(--muted);
 }
 
 /* Status Indicator Dots */
 .bridge-status {
-  width: 8px;
-  height: 8px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   display: block;
   transition: all 0.3s ease;
 }
 
-.bridge-status.online { background: var(--success); box-shadow: 0 0 8px var(--success); }
+.bridge-status.online { background: var(--brand); }
 .bridge-status.offline { background: var(--danger); }
 .bridge-status.checking { background: var(--muted); animation: pulse 1.5s infinite; }
 

@@ -1,0 +1,58 @@
+/* PageMind tooltip — paper + sage */
+.pm-tooltip {
+  --arrow-left: 12px;
+  position: fixed;
+  z-index: 99999;
+  max-width: 240px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  box-shadow: 0 4px 14px rgba(31, 27, 46, 0.10), 0 1px 3px rgba(31, 27, 46, 0.06);
+  color: var(--ink);
+  font-family: var(--wenkai);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+  white-space: pre-line;
+  word-break: break-word;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.pm-tooltip.above {
+  transform: translateY(-4px);
+}
+
+.pm-tooltip.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Arrow */
+.pm-tooltip::before {
+  content: '';
+  position: absolute;
+  left: var(--arrow-left);
+  width: 7px;
+  height: 7px;
+  background: var(--panel);
+  transform: rotate(45deg);
+}
+
+/* Arrow on bottom edge (tooltip above target) */
+.pm-tooltip.above::before {
+  bottom: -4px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+/* Arrow on top edge (tooltip below target) */
+.pm-tooltip.below::before {
+  top: -4px;
+  border-left: 1px solid var(--line);
+  border-top: 1px solid var(--line);
+}

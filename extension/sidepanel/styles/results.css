@@ -1,11 +1,12 @@
-/* Modern Results Display with Gemini Aesthetic */
+/* Results — PageMind paper + sage conversation */
 .result-area {
   flex: 1;
   overflow-y: auto;
-  padding: 12px;
+  padding: 8px 14px 22px;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  position: relative;
 }
 
 .result-placeholder {
@@ -22,42 +23,56 @@
 .placeholder-icon-wrapper {
   margin-bottom: 14px;
   background: var(--brand-soft);
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 2px 6px rgba(90, 138, 106, 0.25);
 }
 
 .generate-gemini-icon.large {
-  width: 32px;
-  height: 32px;
-  color: var(--brand-purple);
+  width: 28px;
+  height: 28px;
+  color: var(--brand);
 }
 
 .placeholder-title {
+  font-family: var(--wenkai);
   font-size: 17px;
-  font-weight: 700;
+  font-weight: 600;
   margin-bottom: 6px;
   color: var(--ink);
 }
 
 .placeholder-copy {
+  font-family: var(--wenkai);
   font-size: 13px;
   max-width: 240px;
   line-height: 1.5;
 }
 
-/* Chat Bubbles / Message Cards */
+/* Answer cards — paper style with left accent bar */
 .result-card {
-  border-radius: var(--radius-lg);
-  padding: 14px;
+  border-radius: var(--radius);
+  padding: 0;
   animation: slideUp 0.3s ease-out;
   position: relative;
-  max-height: 480px;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.result-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--brand);
 }
 
 @keyframes slideUp {
@@ -69,93 +84,146 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  padding: 8px 12px;
+  border-bottom: 1px dashed var(--line-soft);
+  padding-left: 14px;
 }
 
 .result-tag {
-  font-size: 11px;
+  font-family: var(--mono);
+  font-size: 9.5px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  background: transparent;
-  border: 1px solid var(--line);
-  color: var(--muted);
-  padding: 2px 8px;
-  border-radius: 6px;
+  letter-spacing: 0.22em;
+  background: var(--brand-soft);
+  border: none;
+  color: var(--brand);
+  padding: 2px 7px;
+  border-radius: 3px;
   font-weight: 600;
 }
 
 .result-tag.gemini {
-  background: var(--gemini-gradient);
-  border: none;
-  color: white;
+  background: var(--brand-soft);
+  color: var(--brand);
 }
 
 .result-tag.deepseek {
-  border-color: #86efac;
-  background: #ecfdf3;
-  color: #15803d;
+  background: var(--cool-tint);
+  color: var(--cool);
+  border: none;
 }
 
 .result-tag.codex {
-  border-color: #cbd5e1;
-  background: #f8fafc;
-  color: #334155;
+  background: var(--bg-deep);
+  color: var(--ink-soft);
+  border: none;
 }
 
 .result-tag.selection {
-  border-color: #fecaca;
+  background: rgba(201, 100, 66, 0.08);
   color: var(--danger);
-  background: #fff5f5;
+  border: none;
 }
 
 .result-actions { display: flex; gap: 4px; }
 
 .result-text {
-  font-size: 14px;
-  line-height: 1.6;
+  font-family: var(--wenkai);
+  font-size: 15px;
+  line-height: 1.7;
   color: var(--ink);
   white-space: pre-wrap;
   word-break: break-word;
-  overflow-y: auto;
-  flex: 1;
+  flex-shrink: 0;
+  padding: 14px 16px;
+  padding-left: 14px;
 }
 
+.result-text.clamped {
+  max-height: calc(1.7em * 6);
+  overflow: hidden;
+  mask-image: linear-gradient(to bottom, #000 85%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 85%, transparent 100%);
+}
+
+.result-expand-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  padding: 6px 0;
+  border: none;
+  border-top: 1px dashed var(--line-soft);
+  background: var(--bg-deep);
+  color: var(--muted);
+  font-family: var(--wenkai);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+}
+
+.result-expand-btn:hover {
+  color: var(--brand);
+  background: var(--brand-soft);
+}
+
+.result-expand-btn svg {
+  width: 12px;
+  height: 12px;
+  transition: transform 0.2s ease;
+}
+
+.result-expand-btn.expanded svg {
+  transform: rotate(180deg);
+}
+
+/* User question bubble — sage accent */
 .user-question-card {
   align-self: flex-end;
-  max-width: min(92%, 720px);
-  padding: 12px 14px;
+  max-width: min(78%, 720px);
+  padding: 14px 16px;
   border-radius: 14px 14px 4px 14px;
   background: var(--brand);
   color: #ffffff;
-  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.22);
+  box-shadow: 0 2px 8px rgba(90, 138, 106, 0.30);
   animation: slideUp 0.24s ease-out;
+  flex-shrink: 0;
 }
 
 .user-question-meta {
-  margin-bottom: 5px;
-  font-size: 11px;
-  font-weight: 750;
-  opacity: 0.78;
+  margin-bottom: 3px;
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 500;
+  opacity: 0.7;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
 }
 
 .user-question-text {
-  font-size: 14px;
-  line-height: 1.55;
+  font-family: var(--wenkai);
+  font-size: 15px;
+  line-height: 1.5;
   white-space: pre-wrap;
   word-break: break-word;
 }
 
+/* Submitted content preview — paper footer */
 .submitted-content-preview {
-  margin-top: 12px;
-  border-top: 1px solid var(--line);
-  padding-top: 10px;
+  margin-top: 0;
+  padding: 7px 14px 8px;
+  background: var(--bg-deep);
+  border-top: 1px solid var(--line-soft);
 }
 
 .submitted-content-preview summary {
   cursor: pointer;
   color: var(--muted);
-  font-size: 12px;
-  font-weight: 700;
+  font-family: var(--wenkai);
+  font-size: 13px;
+  font-weight: 500;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -183,8 +251,10 @@
 
 .submitted-content-count {
   margin-left: auto;
-  color: #64748b;
-  font-weight: 600;
+  font-family: var(--mono);
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 500;
 }
 
 .submitted-content-text {
@@ -193,9 +263,9 @@
   overflow: auto;
   padding: 10px;
   border: 1px solid var(--line);
-  border-radius: 10px;
-  background: #f8fafc;
-  color: #334155;
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--ink-soft);
   font-size: 12px;
   line-height: 1.6;
   white-space: pre-wrap;
@@ -217,19 +287,23 @@
 
 .submitted-question-block {
   padding: 12px;
-  background: #eff6ff;
+  background: var(--brand-soft);
 }
 
 .submitted-question-label {
   margin-bottom: 6px;
   color: var(--brand);
-  font-size: 12px;
-  font-weight: 750;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
 .submitted-question-text {
   color: var(--ink);
-  font-size: 13px;
+  font-family: var(--wenkai);
+  font-size: 14px;
   line-height: 1.55;
   white-space: pre-wrap;
   word-break: break-word;
@@ -241,10 +315,10 @@
   margin: 0;
   padding: 14px;
   border: 1px solid var(--line);
-  border-radius: 12px;
-  background: #f8fafc;
-  color: #0f172a;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--mono);
   font-size: 12px;
   line-height: 1.65;
   white-space: pre-wrap;
@@ -252,16 +326,16 @@
   overflow: auto;
 }
 
-/* Markdown-like styling for AI response */
+/* Markdown-like styling */
 .result-text strong { color: var(--brand); }
 .result-text code {
-  background: #f1f5f9;
-  border: 1px solid #e2e8f0;
+  background: var(--bg-deep);
+  border: 1px solid var(--line);
   padding: 2px 6px;
-  border-radius: 6px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  border-radius: 4px;
+  font-family: var(--mono);
   font-size: 13px;
-  color: #334155;
+  color: var(--ink-soft);
 }
 
 /* Loading Animation */
@@ -271,7 +345,7 @@
   gap: 12px;
   padding: 12px 16px;
   background: var(--panel);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius);
   border: 1px solid var(--line);
   align-self: flex-start;
 }
@@ -279,7 +353,7 @@
 .gemini-loader {
   width: 20px;
   height: 20px;
-  background: var(--gemini-gradient);
+  background: var(--brand-gradient);
   border-radius: 50%;
   animation: pulse-loader 1.2s infinite ease-in-out;
 }
@@ -291,6 +365,7 @@
 }
 
 .loading-label {
+  font-family: var(--wenkai);
   font-size: 13px;
   font-weight: 500;
   color: var(--muted);
@@ -302,6 +377,7 @@
   gap: 6px;
   align-self: flex-start;
   color: var(--ink);
+  font-family: var(--wenkai);
   font-size: 14px;
   font-weight: 600;
   line-height: 1.4;

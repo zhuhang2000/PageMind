@@ -1,4 +1,4 @@
-/* Shared card surfaces for repeated side-panel items. */
+/* Card surfaces — PageMind paper style */
 .input-card,
 .prompt-card,
 .result-card,
@@ -20,7 +20,7 @@
 }
 
 .input-card {
-  border-radius: var(--radius-pill);
+  border-radius: 10px;
   box-shadow: var(--shadow);
 }
 
