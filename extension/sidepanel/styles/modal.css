@@ -172,3 +172,47 @@
 .pm-modal-btn.primary.danger:focus-visible {
   outline-color: var(--danger);
 }
+
+/* Copy success preview */
+.pm-copy-success-modal {
+  width: calc(100% - 32px);
+  max-width: 620px;
+  max-height: min(78vh, 680px);
+  align-items: stretch;
+}
+
+.pm-copy-success-modal .pm-modal-icon,
+.pm-copy-success-modal .pm-modal-title {
+  align-self: center;
+}
+
+.pm-copy-success-modal .pm-modal-message {
+  width: 100%;
+  text-align: left;
+}
+
+.pm-copy-success-summary {
+  margin-bottom: 10px;
+  color: var(--brand);
+  font-family: var(--wenkai);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.pm-copy-success-text {
+  width: 100%;
+  max-height: min(46vh, 380px);
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--wenkai);
+  font-size: 15px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow: auto;
+}

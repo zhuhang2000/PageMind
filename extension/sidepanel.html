@@ -4,9 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PageMind</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="sidepanel/styles/tokens.css" />
   <link rel="stylesheet" href="sidepanel/styles/reset.css" />
   <link rel="stylesheet" href="sidepanel/styles/utilities.css" />
@@ -29,23 +26,38 @@
 <body>
 
 <div class="page-info">
-  <div class="page-info-header">
+  <input id="includePageContent" type="checkbox" checked hidden />
+  <div class="page-info-grid">
     <div class="page-text">
       <div class="page-title" id="pageTitle">—</div>
       <div class="page-url" id="pageUrl">—</div>
     </div>
-    <div class="header-actions">
-      <span id="bridgeStatus" class="bridge-status checking" title="Bridge 连接状态"></span>
-      <button class="content-fetch-btn demo-data-btn" id="loadDemoDataBtn" title="加载侧边栏测试数据" aria-label="加载侧边栏测试数据">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M4 4h16v16H4z"></path>
-          <path d="M8 8h8"></path>
-          <path d="M8 12h5"></path>
-          <path d="M8 16h7"></path>
+    <div class="header-brand">
+      <span class="brand-mark" aria-hidden="true">
+        <svg class="brand-icon" viewBox="0 0 200 200" width="32" height="32">
+          <rect width="200" height="200" rx="44" fill="#14181a"/>
+          <text x="30" y="148" font-family="'Instrument Serif', Fraunces, Georgia, serif" font-size="160" font-style="italic" font-weight="500" fill="#3d6249">P</text>
+          <text x="70" y="148" font-family="'Instrument Serif', Fraunces, Georgia, serif" font-size="150" font-style="italic" font-weight="500" fill="#f4efe4">m</text>
+          <rect x="24" y="156" width="150" height="2.4" fill="#c08a3e"/>
+          <circle cx="190" cy="155" r="7" fill="#c08a3e"/>
         </svg>
-        <span>加载 Demo</span>
+      </span>
+      <span class="brand-name" aria-label="PageMind"><span class="brand-page">Page</span><span class="brand-mind">Mind</span></span>
+    </div>
+    <div class="context-controls">
+      <button class="context-summary-btn context-state-empty" id="expandContentPanelBtn" type="button" title="管理网页上下文内容">
+        <span class="context-main">
+          <svg class="icon context-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <path d="M14 2v6h6"></path>
+            <path d="M8 13h8"></path>
+            <path d="M8 17h5"></path>
+          </svg>
+          <span class="context-title">还没有网页内容</span>
+        </span>
+        <span class="context-meta">获取内容后会显示在这里</span>
       </button>
-      <button class="content-fetch-btn" id="refreshPageBtn" title="手动获取当前网页内容" aria-label="手动获取当前网页内容">
+      <button class="context-action-btn" id="refreshPageBtn" type="button" title="获取网页内容">
         <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M20 12V5.75c0-.16-.06-.31-.18-.43l-3.14-3.14A.6.6 0 0 0 16.25 2H4.6a.6.6 0 0 0-.6.6v18.8c0 .33.27.6.6.6H11"></path>
           <path d="M8 10h8M8 6h4M8 14h3"></path>
@@ -57,29 +69,17 @@
       </button>
     </div>
   </div>
-  <div class="context-top-bar" id="contextStatusBar">
-    <input id="includePageContent" type="checkbox" checked hidden />
-    <button class="context-summary-btn context-state-empty" id="expandContentPanelBtn" type="button" title="管理网页上下文内容">
-      <span class="context-main">
-        <svg class="icon context-icon" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-          <path d="M14 2v6h6"></path>
-          <path d="M8 13h8"></path>
-          <path d="M8 17h5"></path>
-        </svg>
-        <span class="context-title">还没有网页内容</span>
-      </span>
-      <span class="context-meta">获取内容后会显示在这里</span>
-      <span class="context-action">管理内容</span>
-    </button>
-  </div>
 </div>
 
 <div class="result-area" id="resultArea">
   <div class="result-placeholder">
     <div class="placeholder-icon-wrapper">
-      <svg class="generate-gemini-icon large" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M11.04 19.32Q12 21.51 12 24q0-2.49.93-4.68.96-2.19 2.58-3.81t3.81-2.55Q21.51 12 24 12q-2.49 0-4.68-.93a12.3 12.3 0 0 1-3.81-2.58 12.3 12.3 0 0 1-2.58-3.81Q12 2.49 12 0q0 2.49-.96 4.68-.93 2.19-2.55 3.81a12.3 12.3 0 0 1-3.81 2.58Q2.49 12 0 12q2.49 0 4.68.96 2.19.93 3.81 2.55t2.55 3.81"/>
+      <svg class="placeholder-brand-icon" viewBox="0 0 200 200" aria-hidden="true">
+        <rect width="200" height="200" rx="44" fill="#14181a"/>
+        <text x="30" y="148" font-family="'Instrument Serif', Fraunces, Georgia, serif" font-size="160" font-style="italic" font-weight="500" fill="#3d6249">P</text>
+        <text x="70" y="148" font-family="'Instrument Serif', Fraunces, Georgia, serif" font-size="150" font-style="italic" font-weight="500" fill="#f4efe4">m</text>
+        <rect x="24" y="156" width="150" height="2.4" fill="#c08a3e"/>
+        <circle cx="190" cy="155" r="7" fill="#c08a3e"/>
       </svg>
     </div>
     <div class="placeholder-title">你好，我是 PageMind</div>
@@ -89,6 +89,7 @@
 
 <div class="input-container">
   <input class="image-input" id="imageInput" type="file" accept="image/png,image/jpeg,image/webp,image/gif" multiple />
+  <input class="image-input" id="fileInput" type="file" accept=".txt,.md,.markdown,.csv,.json,.html,.htm,.xml,.log,.js,.jsx,.ts,.tsx,.css,.py,.java,.c,.cpp,.h,.hpp,.go,.rs,.sql,.yaml,.yml,text/*,application/json,application/xml" multiple />
   <div class="image-preview-bar" id="imagePreviewList"></div>
 
   <div class="input-card">
@@ -104,38 +105,90 @@
 
     <div class="input-toolbar-row">
       <div class="input-actions-left">
-        <button class="attachment-btn" id="attachmentBtn" title="添加附件">
-          <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        <button class="attachment-btn" id="attachmentBtn" title="截屏识别" aria-label="截屏识别">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M7 3H5a2 2 0 0 0-2 2v2"></path>
+            <path d="M17 3h2a2 2 0 0 1 2 2v2"></path>
+            <path d="M21 17v2a2 2 0 0 1-2 2h-2"></path>
+            <path d="M7 21H5a2 2 0 0 1-2-2v-2"></path>
+            <path d="M8 12h8"></path>
+            <path d="M12 8v8"></path>
+          </svg>
+        </button>
+        <button class="multi-select-btn" id="qaSelectToggleBtn" type="button" title="多选导出聊天记录" disabled>
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M9 6h11"></path>
+            <path d="M9 12h11"></path>
+            <path d="M9 18h11"></path>
+            <path d="M4 6h.01"></path>
+            <path d="M4 12h.01"></path>
+            <path d="M4 18h.01"></path>
+          </svg>
+          <span>多选</span>
         </button>
         <div class="attachment-menu" id="attachmentMenu">
           <button class="menu-item" id="addImageBtn" title="上传图片作为附件">
             <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
             上传图片
           </button>
+          <button class="menu-item" id="addFileBtn" title="上传文本、Markdown、CSV、JSON 或代码文件作为附件">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6"></path><path d="M8 13h8"></path><path d="M8 17h5"></path></svg>
+            上传文件
+          </button>
           <button class="menu-item" id="captureSnipBtn" title="截取屏幕区域进行识别">
             <svg class="icon" viewBox="0 0 24 24"><path d="M7 3H5a2 2 0 0 0-2 2v2"></path><path d="M17 3h2a2 2 0 0 1 2 2v2"></path><path d="M21 17v2a2 2 0 0 1-2 2h-2"></path><path d="M7 21H5a2 2 0 0 1-2-2v-2"></path><path d="M8 12h8"></path><path d="M12 8v8"></path></svg>
             截屏识别
-          </button>
-          <button class="menu-item" id="toggleContextBtn" title="附带当前网页内容">
-            <svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-            网页内容
           </button>
         </div>
       </div>
 
       <div class="input-actions-right">
-        <button class="prompt-drawer-btn" id="historyDrawerBtn" type="button" title="问答历史">
-          <svg class="icon" viewBox="0 0 24 24"><path d="M3 3v5h5"></path><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"></path><path d="M12 7v5l3 2"></path></svg>
-          <span>历史</span>
+        <button class="prompt-drawer-btn prompt-expand-open-btn" id="promptExpandBtn" type="button" title="打开放大编辑器">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M15 3h6v6"></path>
+            <path d="M21 3l-7 7"></path>
+            <path d="M9 21H3v-6"></path>
+            <path d="M3 21l7-7"></path>
+          </svg>
+          <span>放大编辑</span>
         </button>
-        <button class="prompt-drawer-btn" id="promptDrawerBtn" type="button" title="提示词模板">
+        <button class="prompt-drawer-btn prompt-template-open-btn" id="promptDrawerBtn" type="button" title="提示词模板">
           <svg class="icon" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
           <span>提示词模板</span>
+        </button>
+        <button class="prompt-drawer-btn prompt-history-open-btn" id="historyDrawerBtn" type="button" title="会话管理">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M3 3v5h5"></path><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"></path><path d="M12 7v5l3 2"></path></svg>
+          <span>会话管理</span>
         </button>
       </div>
     </div>
   </div>
   
+</div>
+
+<div class="prompt-expand-overlay" id="promptExpandOverlay" hidden>
+  <div class="prompt-expand-panel" role="dialog" aria-modal="true" aria-labelledby="promptExpandTitle">
+    <div class="prompt-expand-header">
+      <div class="prompt-expand-title-block">
+        <span class="prompt-expand-kicker">PageMind</span>
+        <h3 id="promptExpandTitle">放大编辑</h3>
+      </div>
+      <button class="close-drawer-btn" id="closePromptExpandBtn" type="button" title="收起编辑器">&times;</button>
+    </div>
+
+    <textarea id="promptExpandInput" class="prompt-expand-input" placeholder="继续追问 PageMind…" spellcheck="false"></textarea>
+
+    <div class="prompt-expand-footer">
+      <span class="prompt-expand-hint">Enter 换行，Ctrl/Cmd + Enter 发送</span>
+      <div class="prompt-expand-actions">
+        <button class="mini-btn" id="applyPromptExpandBtn" type="button">收起</button>
+        <button class="prompt-icon-btn primary" id="sendPromptExpandBtn" type="button">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+          发送
+        </button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- 抽屉式面板 -->

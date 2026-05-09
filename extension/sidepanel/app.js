@@ -1,12 +1,14 @@
 import {
   promptInput, summarizeBtn, resultArea, pageTitle, pageUrl,
+  promptExpandBtn, promptExpandOverlay, promptExpandInput, closePromptExpandBtn,
+  applyPromptExpandBtn, sendPromptExpandBtn,
   includePageContent, refreshPageBtn, loadDemoDataBtn,
-  attachmentBtn, attachmentMenu, imageInput, addImageBtn, captureSnipBtn,
+  attachmentBtn, attachmentMenu, imageInput, fileInput, addImageBtn, addFileBtn, captureSnipBtn,
   promptDrawerBtn, promptDrawer, closePromptDrawerBtn, closeEditorBtn,
   createNewPromptBtn, savePromptBtn, deletePromptBtn,
   historyDrawerBtn, historyDrawer, closeHistoryDrawerBtn, historySearchInput,
   clearHistoryBtn, newSessionBtn,
-  expandContentPanelBtn, toggleContextBtn, contentPreviewPanel, closePreviewBtn,
+  expandContentPanelBtn, qaSelectToggleBtn, contentPreviewPanel, closePreviewBtn,
   selectAllModulesBtn, clearModulesBtn,
   drawerOverlay,
   closeFullContentBtn, addSelectedTextBtn, applyFullContentSelectionsBtn,
@@ -17,11 +19,11 @@ import { getAttachedImages, setLastResult, getEditingPromptId, getCurrentPageDat
 import { api } from "./lib/api.js";
 import { openDrawerById, closeAllDrawers, closeDrawer, closeAttachmentMenu, initDraggableDrawers, initResizableDrawerPersistence } from "./features/drawers.js";
 import { renderPromptList, openPromptEditor, savePrompt, deletePrompt, loadSavedPrompts } from "./features/prompts.js";
-import { addImages, captureWindowsSnip, renderImageAttachments } from "./features/images.js";
+import { addFiles, addImages, buildAttachedFileContent, captureWindowsSnip, renderImageAttachments } from "./features/images.js";
 import { renderContentModules } from "./features/content-modules.js";
 import { closeFullContent, setFullContentAction, rememberFullContentSelection, removePendingSelectionAt, handleFullContentTextInput, isCurrentSelectionInsideFullContent, applyPendingFullContentSelections, clearPendingFullContentSelections, saveFullContentViewPosition } from "./features/full-content.js";
 import { saveHistoryRecord, openHistoryDrawer, handleHistorySearchInput, clearHistoryRecords, createNewSession, ensureActiveSession, initHistory } from "./features/history.js";
-import { renderLoading, renderUserQuestion, renderError, renderResult } from "./features/results.js";
+import { renderLoading, renderUserQuestion, renderError, renderResult, toggleQaSelectMode } from "./features/results.js";
 import { checkBridge, refreshPageInfo, buildSelectedPageContent, ensureCurrentPageData } from "./features/page-bridge.js";
 import { pmConfirm } from "./features/modal.js";
 import { initGoogleDocsExport } from "./features/google-docs-export.js";
@@ -29,6 +31,49 @@ import { initGoogleDocsExport } from "./features/google-docs-export.js";
 export function resizePromptInput() {
   promptInput.style.height = "auto";
   promptInput.style.height = `${promptInput.scrollHeight}px`;
+}
+
+let isPromptExpandOpen = false;
+
+function syncMainPromptFromExpanded() {
+  promptInput.value = promptExpandInput.value;
+  resizePromptInput();
+}
+
+function openPromptExpandEditor() {
+  if (isPromptExpandOpen) return;
+
+  isPromptExpandOpen = true;
+  closeAttachmentMenu();
+  promptExpandInput.value = promptInput.value;
+  promptExpandOverlay.hidden = false;
+
+  requestAnimationFrame(() => {
+    promptExpandOverlay.classList.add("active");
+    promptExpandInput.focus({ preventScroll: true });
+    const cursorPosition = promptExpandInput.value.length;
+    promptExpandInput.setSelectionRange(cursorPosition, cursorPosition);
+  });
+}
+
+function closePromptExpandEditor() {
+  if (!isPromptExpandOpen) return;
+
+  syncMainPromptFromExpanded();
+  isPromptExpandOpen = false;
+  promptExpandOverlay.classList.remove("active");
+
+  window.setTimeout(() => {
+    if (!isPromptExpandOpen) {
+      promptExpandOverlay.hidden = true;
+    }
+  }, 180);
+}
+
+function sendFromPromptExpandEditor() {
+  syncMainPromptFromExpanded();
+  closePromptExpandEditor();
+  summarizeBtn.click();
 }
 
 async function handleSummarize() {
@@ -51,10 +96,10 @@ async function handleSummarize() {
     pageTitle.textContent = pageData.title || "未知标题";
     pageUrl.textContent = pageData.url || "";
 
-    const selectedContent = buildSelectedPageContent();
+    const selectedContent = [buildSelectedPageContent(), buildAttachedFileContent()].filter(Boolean).join("\n\n");
     const attachedImages = getAttachedImages();
     if (includePageContent.checked && !selectedContent.trim() && attachedImages.length === 0) {
-      throw new Error("请先勾选要发送的网页内容，或添加图片");
+      throw new Error("请先勾选要发送的网页内容，或添加图片/文件");
     }
 
     await ensureActiveSession({
@@ -122,7 +167,9 @@ async function handleSummarize() {
 // --- Event Bindings ---
 
 summarizeBtn.addEventListener("click", handleSummarize);
-refreshPageBtn.addEventListener("click", refreshPageInfo);
+refreshPageBtn.addEventListener("click", () => {
+  refreshPageInfo();
+});
 
 loadDemoDataBtn?.addEventListener("click", () => {
   import("./demo-data.js").then(({ loadDemoData }) => {
@@ -135,7 +182,8 @@ loadDemoDataBtn?.addEventListener("click", () => {
 
 attachmentBtn.addEventListener("click", (event) => {
   event.stopPropagation();
-  attachmentMenu.classList.toggle("open");
+  closeAttachmentMenu();
+  captureWindowsSnip();
 });
 
 attachmentMenu.addEventListener("click", (event) => {
@@ -193,6 +241,33 @@ drawerOverlay.addEventListener("click", () => {
 
 promptInput.addEventListener("input", resizePromptInput);
 
+promptExpandBtn.addEventListener("click", openPromptExpandEditor);
+
+promptExpandInput.addEventListener("input", syncMainPromptFromExpanded);
+
+promptExpandInput.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
+    event.preventDefault();
+    closePromptExpandEditor();
+    return;
+  }
+
+  if (event.key === "Enter" && (event.ctrlKey || event.metaKey) && !event.isComposing) {
+    event.preventDefault();
+    sendFromPromptExpandEditor();
+  }
+});
+
+promptExpandOverlay.addEventListener("click", (event) => {
+  if (event.target === promptExpandOverlay) {
+    closePromptExpandEditor();
+  }
+});
+
+closePromptExpandBtn.addEventListener("click", closePromptExpandEditor);
+applyPromptExpandBtn.addEventListener("click", closePromptExpandEditor);
+sendPromptExpandBtn.addEventListener("click", sendFromPromptExpandEditor);
+
 promptInput.addEventListener("keydown", (event) => {
   if (event.key !== "Enter" || event.shiftKey || event.isComposing) return;
   event.preventDefault();
@@ -201,6 +276,10 @@ promptInput.addEventListener("keydown", (event) => {
 
 addImageBtn.addEventListener("click", () => {
   imageInput.click();
+});
+
+addFileBtn.addEventListener("click", () => {
+  fileInput.click();
 });
 
 captureSnipBtn.addEventListener("click", () => {
@@ -219,6 +298,18 @@ imageInput.addEventListener("change", async () => {
   }
 });
 
+fileInput.addEventListener("change", async () => {
+  const files = Array.from(fileInput.files || []);
+  fileInput.value = "";
+  if (files.length === 0) return;
+
+  try {
+    await addFiles(files);
+  } catch (err) {
+    renderError(err.message || "文件读取失败");
+  }
+});
+
 includePageContent.addEventListener("change", () => {
   renderContentModules();
 });
@@ -227,8 +318,8 @@ expandContentPanelBtn.addEventListener("click", () => {
   openDrawerById("contentPreviewPanel");
 });
 
-toggleContextBtn.addEventListener("click", () => {
-  openDrawerById("contentPreviewPanel");
+qaSelectToggleBtn.addEventListener("click", () => {
+  toggleQaSelectMode();
 });
 
 selectAllModulesBtn.addEventListener("click", () => {
@@ -314,4 +405,4 @@ renderContentModules();
 initHistory().catch((error) => {
   console.warn("初始化历史会话失败", error);
 });
-refreshPageInfo();
+refreshPageInfo({ extractContent: false });

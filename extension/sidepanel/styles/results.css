@@ -22,20 +22,20 @@
 
 .placeholder-icon-wrapper {
   margin-bottom: 14px;
-  background: var(--brand-soft);
   width: 56px;
   height: 56px;
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 6px rgba(90, 138, 106, 0.25);
+  overflow: hidden;
+  box-shadow: 0 3px 10px rgba(20, 24, 26, 0.18);
 }
 
-.generate-gemini-icon.large {
-  width: 28px;
-  height: 28px;
-  color: var(--brand);
+.placeholder-brand-icon {
+  width: 56px;
+  height: 56px;
+  display: block;
 }
 
 .placeholder-title {
@@ -49,8 +49,9 @@
 .placeholder-copy {
   font-family: var(--wenkai);
   font-size: 13px;
-  max-width: 240px;
+  max-width: min(420px, 100%);
   line-height: 1.5;
+  white-space: nowrap;
 }
 
 /* Answer cards — paper style with left accent bar */
@@ -140,7 +141,7 @@
 }
 
 .result-text.clamped {
-  max-height: calc(1.7em * 6);
+  max-height: calc((1.7em * 6) + 28px);
   overflow: hidden;
   mask-image: linear-gradient(to bottom, #000 85%, transparent 100%);
   -webkit-mask-image: linear-gradient(to bottom, #000 85%, transparent 100%);
@@ -266,8 +267,9 @@
   border-radius: 8px;
   background: var(--bg);
   color: var(--ink-soft);
-  font-size: 12px;
-  line-height: 1.6;
+  font-family: var(--wenkai);
+  font-size: 15px;
+  line-height: 1.7;
   white-space: pre-wrap;
   word-break: break-word;
 }
@@ -318,9 +320,9 @@
   border-radius: 8px;
   background: var(--bg);
   color: var(--ink);
-  font-family: var(--mono);
-  font-size: 12px;
-  line-height: 1.65;
+  font-family: var(--wenkai);
+  font-size: 15px;
+  line-height: 1.7;
   white-space: pre-wrap;
   word-break: break-word;
   overflow: auto;

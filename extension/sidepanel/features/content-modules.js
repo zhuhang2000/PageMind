@@ -1,4 +1,4 @@
-import { includePageContent, expandContentPanelBtn, selectAllModulesBtn, clearModulesBtn, contentModuleList, fullContentTitle } from "../lib/dom-refs.js";
+import { includePageContent, expandContentPanelBtn, refreshPageBtn, selectAllModulesBtn, clearModulesBtn, contentModuleList, fullContentTitle } from "../lib/dom-refs.js";
 import { getCurrentPageData, setCurrentPageDataRaw, getContentModules, setContentModules, getSelectedModuleIds, setSelectedModuleIds, getActiveFullContentModuleId } from "../lib/state.js";
 import { normalizePanelText, makePanelPreview } from "../lib/text-utils.js";
 import { openFullContent, resetFullContentState } from "./full-content.js";
@@ -164,12 +164,12 @@ export function renderContentModules() {
   const hasModules = contentModules.length > 0;
   const hasSelection = selectedCount > 0;
   const stateClass = hasSelection ? "context-state-selected" : hasModules ? "context-state-unselected" : "context-state-empty";
-  const titleText = hasSelection ? "已加入上下文" : hasModules ? "未选择网页内容" : "还没有网页内容";
+  const titleText = hasSelection ? "已选网页内容" : hasModules ? "未选择网页内容" : "还没有网页内容";
   const metaText = hasSelection ? `${selectedCount} 个模块 · ${selectedChars} 字` : hasModules ? `${contentModules.length} 个模块可选` : "获取内容后会显示在这里";
 
   expandContentPanelBtn.className = `context-summary-btn ${stateClass}`;
   expandContentPanelBtn.title = hasModules ? "管理网页上下文内容" : "查看网页上下文内容";
-  expandContentPanelBtn.setAttribute("aria-label", `${titleText}，${metaText}，管理内容`);
+  expandContentPanelBtn.setAttribute("aria-label", `${titleText}，${metaText}`);
   expandContentPanelBtn.innerHTML = `
     <span class="context-main">
       <svg class="icon context-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -181,8 +181,8 @@ export function renderContentModules() {
       <span class="context-title">${titleText}</span>
     </span>
     <span class="context-meta">${metaText}</span>
-    <span class="context-action">管理内容</span>
   `;
+
 
   selectAllModulesBtn.disabled = !isEnabled || contentModules.length === 0;
   clearModulesBtn.disabled = !isEnabled || contentModules.length === 0;

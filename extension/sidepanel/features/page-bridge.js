@@ -27,7 +27,11 @@ export async function ensureCurrentPageData() {
   const currentPageData = getCurrentPageData();
   if (currentPageData) {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (tab?.id === currentPageData.tabId && (!tab.url || tab.url === currentPageData.url)) {
+    if (
+      tab?.id === currentPageData.tabId
+      && (!tab.url || tab.url === currentPageData.url)
+      && !currentPageData.isMetadataOnly
+    ) {
       return currentPageData;
     }
   }
@@ -40,16 +44,16 @@ export async function ensureCurrentPageData() {
 export async function checkBridge() {
   try {
     await api.checkHealth();
-    bridgeStatus.className = "bridge-status online";
+    if (bridgeStatus) bridgeStatus.className = "bridge-status online";
   } catch {
-    bridgeStatus.className = "bridge-status offline";
+    if (bridgeStatus) bridgeStatus.className = "bridge-status offline";
   }
 }
 
-export async function refreshPageInfo() {
+export async function refreshPageInfo({ extractContent = true } = {}) {
   refreshPageBtn.disabled = true;
   try {
-    const pageData = await getPageContent();
+    const pageData = extractContent ? await getPageContent() : await getActiveTabMetadata();
     setCurrentPageData(pageData);
     pageTitle.textContent = pageData.title || "未知标题";
     pageUrl.textContent = pageData.url || "";
@@ -68,6 +72,21 @@ export async function refreshPageInfo() {
   } finally {
     refreshPageBtn.disabled = false;
   }
+}
+
+async function getActiveTabMetadata() {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!tab?.id) throw new Error("无法获取当前标签页");
+
+  return {
+    tabId: tab.id,
+    title: tab.title || "未知标题",
+    url: tab.url || "",
+    content: "",
+    contentModules: [],
+    isSelection: false,
+    isMetadataOnly: true,
+  };
 }
 
 async function getPageContent() {

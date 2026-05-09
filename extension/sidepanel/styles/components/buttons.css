@@ -158,92 +158,51 @@ button:disabled {
 
 /* Ghost buttons (toolbar) */
 .attachment-btn,
-.content-fetch-btn {
-  min-height: 28px;
-  padding: 5px 8px;
-  border: none;
-  border-radius: 6px;
-  background: transparent;
-  color: var(--ink-soft);
-  font-family: var(--sans);
-  font-size: 11px;
-  font-weight: 500;
-  line-height: 1;
-  white-space: nowrap;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-}
-
+.multi-select-btn,
 .prompt-drawer-btn {
   min-height: 28px;
-  padding: 5px 8px;
-  border: none;
-  border-radius: 6px;
-  background: transparent;
-  color: var(--ink-soft);
-  font-family: var(--sans);
-  font-size: 11px;
-  font-weight: 500;
-  line-height: 1;
-  white-space: nowrap;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-}
-
-.attachment-btn,
-.prompt-drawer-btn {
   height: 28px;
-}
-
-.content-fetch-btn {
-  padding: 7px 11px;
-  border-radius: 7px;
-  background: var(--ink);
-  color: var(--bg);
-  font-size: 11.5px;
+  padding: 0 9px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 11px;
   font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  box-shadow: none;
 }
 
-.attachment-btn:hover,
-.prompt-drawer-btn:hover {
-  background: var(--bg-deep);
-  color: var(--ink);
+.multi-select-btn {
+  font-weight: 600;
 }
 
-.content-fetch-btn:hover:not(:disabled) {
-  background: var(--ink-soft);
-}
-
-.content-fetch-btn:disabled {
-  cursor: wait;
-  opacity: 0.62;
-}
-
-.content-fetch-btn .icon {
-  width: 12px;
-  height: 12px;
-  flex-shrink: 0;
-  stroke-width: 2;
-}
-
-/* Pill button for template drawer trigger */
-.prompt-drawer-btn:last-of-type {
+.attachment-btn:hover:not(:disabled),
+.multi-select-btn:hover:not(:disabled),
+.prompt-drawer-btn:hover:not(:disabled),
+.multi-select-btn.active {
+  border-color: var(--brand-soft);
   background: var(--brand-soft);
-  border: 1px solid var(--brand-soft);
   color: var(--brand);
-  border-radius: 999px;
-  padding: 5px 10px;
-  font-weight: 500;
 }
 
-.prompt-drawer-btn:last-of-type:hover {
-  background: var(--brand);
-  border-color: var(--brand);
-  color: #fff;
+.attachment-btn:active:not(:disabled),
+.multi-select-btn:active:not(:disabled),
+.prompt-drawer-btn:active:not(:disabled),
+.multi-select-btn.active:hover:not(:disabled) {
+  transform: none;
+}
+
+.attachment-btn .icon,
+.multi-select-btn .icon,
+.prompt-drawer-btn .icon {
+  width: 13px;
+  height: 13px;
 }
 
 .menu-item {

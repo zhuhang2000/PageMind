@@ -1,6 +1,6 @@
 /* Page Header — PageMind paper + sage */
 .page-info {
-  padding: 14px 16px 12px;
+  padding: 2px 16px 10px;
   flex-shrink: 0;
   border-bottom: 1px solid var(--line);
   background: var(--bg);
@@ -8,30 +8,26 @@
   z-index: 2;
 }
 
-.page-info-header {
-  display: flex;
-  align-items: flex-start;
-  gap: 11px;
+/* Left + Right split */
+.page-info-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  grid-template-rows: auto 32px;
+  column-gap: 12px;
+  row-gap: 7px;
+  align-items: start;
 }
 
-.page-text { min-width: 0; flex: 1; }
-
-.page-text::before {
-  content: '当前页面';
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--muted);
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  margin-bottom: 2px;
+/* Left: site title + url */
+.page-text {
+  flex: 1;
+  min-width: 0;
+  padding-top: 10px;       /* 调整左侧垂直位置 */
 }
 
 .page-title {
   font-family: var(--wenkai);
-  font-size: 16px;
+  font-size: 22px;
   font-weight: 600;
   color: var(--ink);
   letter-spacing: 0.01em;
@@ -43,7 +39,7 @@
 
 .page-url {
   font-family: var(--mono);
-  font-size: 10.5px;
+  font-size: 15px;
   color: var(--muted);
   white-space: nowrap;
   overflow: hidden;
@@ -51,27 +47,77 @@
   margin-top: 2px;
 }
 
-.header-actions {
+.header-brand {
+  justify-self: end;
+  padding-top: 10px;
   display: flex;
   align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
+  gap: 7px;
 }
 
-/* Context top bar — paper bookmark ribbon */
-.context-top-bar {
+.context-controls {
+  grid-column: 1 / -1;
+  grid-row: 2;
   display: flex;
-  align-items: stretch;
-  justify-content: stretch;
-  width: 100%;
-  margin-top: 12px;
+  align-items: center;
+  gap: clamp(24px, 5vw, 56px);
+  min-width: 0;
+}
+
+.brand-mark {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.brand-mark .brand-icon {
+  width: 32px;
+  height: 32px;
+  display: block;
+}
+
+.brand-name {
+  font-family: 'Fraunces', 'Instrument Serif', Georgia, serif;
+  font-size: 22px;
+  font-weight: 500;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  position: relative;
+  padding-bottom: 3px;
+}
+
+.brand-name::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1.5px;
+  background: #c08a3e;
+}
+
+.brand-page {
+  color: #2c4a36;
+}
+
+.brand-mind {
+  color: var(--ink);
 }
 
 .context-summary-btn {
-  width: 100%;
-  min-height: 40px;
-  margin: 0;
-  padding: 10px 12px;
+  width: auto;
+  flex: 1 1 calc(100% - 120px - clamp(24px, 5vw, 56px));
+  min-width: 0;
+  min-height: 32px;
+  height: 32px;
+  margin-top: 0;
+  padding: 6px 10px;
   border: 1px solid #e8d8a8;
   border-left: 3px solid var(--warm);
   border-radius: 6px;
@@ -80,12 +126,15 @@
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: space-between;
+  gap: 8px;
   text-align: left;
   overflow: hidden;
   transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
   font-family: inherit;
+  white-space: nowrap;
 }
+
 
 .context-summary-btn:hover {
   border-color: var(--warm);
@@ -111,15 +160,13 @@
 .context-title {
   font-family: var(--wenkai);
   color: var(--ink);
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 600;
   line-height: 1.2;
   white-space: nowrap;
 }
 
 .context-meta {
-  min-width: 0;
-  flex: 1;
   color: var(--warm);
   font-family: var(--mono);
   font-size: 10px;
@@ -128,22 +175,49 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex-shrink: 1;
+  min-width: 0;
 }
 
-.context-action {
-  min-height: 24px;
-  padding: 4px 10px;
-  border: 1px solid var(--brand);
+/* Context action button — amber capsule (merged fetch/manage) */
+.context-action-btn {
+  width: 120px;
+  min-height: 32px;
+  height: 32px;
+  padding: 6px 14px;
+  border: 1px solid #c08a3e;
   border-radius: var(--radius-full);
-  background: var(--brand);
+  background: #c08a3e;
   color: #ffffff;
   font-family: var(--wenkai);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   line-height: 1;
   white-space: nowrap;
   flex-shrink: 0;
-  box-shadow: 0 1px 4px rgba(90, 138, 106, 0.25);
+  box-shadow: 0 1px 4px rgba(192, 138, 62, 0.25);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.context-action-btn:hover:not(:disabled) {
+  background: #a87530;
+  border-color: #a87530;
+}
+
+.context-action-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.context-action-btn .icon {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+  stroke-width: 2;
 }
 
 .context-state-selected {
@@ -166,12 +240,6 @@
   color: var(--danger);
 }
 
-.context-state-unselected .context-action {
-  background: var(--danger);
-  border-color: var(--danger);
-  color: #ffffff;
-  box-shadow: 0 1px 4px rgba(201, 100, 66, 0.25);
-}
 
 .context-state-empty {
   border-color: var(--line);
@@ -188,12 +256,6 @@
   color: var(--muted);
 }
 
-.context-state-empty .context-action {
-  background: var(--bg-deep);
-  border-color: var(--line);
-  color: var(--muted);
-  box-shadow: none;
-}
 
 /* Status Indicator Dots */
 .bridge-status {
@@ -215,22 +277,32 @@
 }
 
 @media (max-width: 360px) {
-  .context-summary-btn {
-    flex-wrap: wrap;
-    row-gap: 4px;
+  .page-info-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
   }
 
-  .context-main {
-    flex: 1 1 auto;
+  .page-text {
+    grid-column: 1;
+    grid-row: 1;
   }
 
-  .context-meta {
-    order: 3;
-    flex: 1 0 100%;
-    padding-left: 21px;
+  .header-brand {
+    grid-column: 1;
+    grid-row: 2;
+    justify-self: start;
   }
 
-  .context-action {
-    margin-left: auto;
+  .context-controls {
+    grid-column: 1;
+    grid-row: 3;
+    flex-direction: column;
+    align-items: stretch;
+    justify-self: stretch;
+    gap: 8px;
+  }
+
+  .context-action-btn {
+    width: 100%;
   }
 }

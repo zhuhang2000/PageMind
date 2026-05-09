@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <title>PageMind icon</title>
+  <rect width="200" height="200" rx="44" fill="#14181a"/>
+  <text x="14" y="148" font-family="'Instrument Serif', Fraunces, Georgia, serif" font-size="160" font-style="italic" font-weight="500" fill="#3d6249">P</text>
+  <text x="60" y="148" font-family="'Instrument Serif', Fraunces, Georgia, serif" font-size="150" font-style="italic" font-weight="500" fill="#f4efe4">m</text>
+  <rect x="24" y="156" width="150" height="2.4" fill="#c08a3e"/>
+  <circle cx="190" cy="155" r="7" fill="#c08a3e"/>
+</svg>

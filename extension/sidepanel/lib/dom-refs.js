@@ -10,15 +10,23 @@ export const resultArea = $("resultArea");
 export const attachmentBtn = $("attachmentBtn");
 export const attachmentMenu = $("attachmentMenu");
 export const imageInput = $("imageInput");
+export const fileInput = $("fileInput");
 export const addImageBtn = $("addImageBtn");
+export const addFileBtn = $("addFileBtn");
 export const captureSnipBtn = $("captureSnipBtn");
 export const imagePreviewList = $("imagePreviewList");
 
 export const promptInput = $("promptInput");
+export const promptExpandBtn = $("promptExpandBtn");
+export const promptExpandOverlay = $("promptExpandOverlay");
+export const promptExpandInput = $("promptExpandInput");
+export const closePromptExpandBtn = $("closePromptExpandBtn");
+export const applyPromptExpandBtn = $("applyPromptExpandBtn");
+export const sendPromptExpandBtn = $("sendPromptExpandBtn");
 export const summarizeBtn = $("summarizeBtn");
 export const includePageContent = $("includePageContent");
 export const expandContentPanelBtn = $("expandContentPanelBtn");
-export const toggleContextBtn = $("toggleContextBtn");
+export const qaSelectToggleBtn = $("qaSelectToggleBtn");
 
 export const drawerOverlay = $("drawerOverlay");
 export const contentPreviewPanel = $("contentPreviewPanel");

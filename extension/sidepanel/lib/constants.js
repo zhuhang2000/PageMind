@@ -3,3 +3,6 @@ export const MAX_SELECTED_CONTENT_CHARS = 200000;
 export const MAX_IMAGE_COUNT = 5;
 export const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 export const MAX_TOTAL_IMAGE_BYTES = 12 * 1024 * 1024;
+export const MAX_FILE_COUNT = 5;
+export const MAX_FILE_BYTES = 2 * 1024 * 1024;
+export const MAX_TOTAL_FILE_CHARS = 120000;

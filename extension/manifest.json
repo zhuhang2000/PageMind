@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Gemini 网页助手",
+  "name": "PageMind",
   "version": "1.0.0",
-  "description": "调用本地 Gemini 总结网页、图片和选中文本",
+  "description": "PageMind — 智能网页助手，总结网页、分析图片、回答问题",
   "permissions": [
     "sidePanel",
     "activeTab",
@@ -20,7 +20,7 @@
     "default_path": "sidepanel.html"
   },
   "action": {
-    "default_title": "Gemini 网页助手",
+    "default_title": "PageMind",
     "default_icon": {
       "16": "icons/icon16.png",
       "48": "icons/icon48.png",

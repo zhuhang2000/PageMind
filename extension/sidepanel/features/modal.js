@@ -57,9 +57,18 @@ function hideModal() {
   setTimeout(() => { if (modalRoot) modalRoot.innerHTML = ""; }, 200);
 }
 
-function createDialog({ icon, title, message, buttons }) {
+function escapeModalHtml(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function createDialog({ icon, title, message, buttons, className = "" }) {
   const dialog = document.createElement("div");
-  dialog.className = "pm-modal";
+  dialog.className = `pm-modal ${className}`.trim();
   dialog.setAttribute("role", "alertdialog");
   dialog.setAttribute("aria-modal", "true");
 
@@ -104,6 +113,36 @@ export function pmAlert(title, message = "", icon = "warning") {
       icon,
       title,
       message,
+      buttons: [
+        { label: "知道了", class: "primary", onClick: resolve },
+      ],
+    });
+    showModal(dialog);
+  });
+}
+
+/**
+ * 复制成功弹窗 — 展示已复制的完整导出文本
+ * @param {object} options
+ * @param {string} options.text
+ * @param {number} [options.pairCount]
+ * @param {number} [options.contentCount]
+ */
+export function pmCopySuccess({ text = "", pairCount = 0, contentCount = 0 } = {}) {
+  const copyMeta = [
+    pairCount ? `${pairCount} 条问答` : "",
+    `${contentCount} 段网页内容已去重`,
+  ].filter(Boolean).join(" · ");
+
+  return new Promise((resolve) => {
+    const dialog = createDialog({
+      icon: "success",
+      title: "内容已复制，可交给 AI 深度分析",
+      message: `
+        <div class="pm-copy-success-summary">${escapeModalHtml(copyMeta || "已复制选中内容")}</div>
+        <pre class="pm-copy-success-text">${escapeModalHtml(text)}</pre>
+      `,
+      className: "pm-copy-success-modal",
       buttons: [
         { label: "知道了", class: "primary", onClick: resolve },
       ],

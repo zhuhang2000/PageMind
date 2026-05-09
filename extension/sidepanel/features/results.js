@@ -1,14 +1,17 @@
-import { resultArea, submittedContentViewer, submittedContentTitle, submittedContentMeta, submittedContentQuestion, submittedContentText } from "../lib/dom-refs.js";
+import { resultArea, submittedContentViewer, submittedContentTitle, submittedContentMeta, submittedContentQuestion, submittedContentText, qaSelectToggleBtn } from "../lib/dom-refs.js";
 import { getLastResult } from "../lib/state.js";
 import { escapeHtml } from "../lib/text-utils.js";
 import { openDrawerById } from "./drawers.js";
+import { pmCopySuccess } from "./modal.js";
+
+const RESULT_COLLAPSE_LINES = 6;
 
 export function renderLoading() {
   const loading = document.createElement("div");
   loading.className = "loading";
   loading.innerHTML = `
     <div class="gemini-loader"></div>
-    <span class="loading-label">Gemini 正在分析中…</span>
+    <span class="loading-label">PageMind 正在分析中…</span>
   `;
   resultArea.appendChild(loading);
 }
@@ -17,10 +20,10 @@ export function renderUserQuestion(question) {
   const card = document.createElement("div");
   card.className = "user-question-card";
   card.innerHTML = `
-    <div class="user-question-meta">我的问题</div>
     <div class="user-question-text">${escapeHtml(question)}</div>
   `;
   resultArea.appendChild(card);
+  updateQaSelectControl();
 }
 
 export function renderError(msg) {
@@ -99,11 +102,19 @@ export function renderResult(summary, isSelection, context = {}) {
 
   const copyQaBtn = card.querySelector(".copy-qa-btn");
   copyQaBtn.addEventListener("click", () => {
-    navigator.clipboard.writeText(qaText).then(() => {
-      const originalIcon = copyQaBtn.innerHTML;
-      copyQaBtn.innerHTML = `<svg class="icon" style="color:var(--success)" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
-      setTimeout(() => (copyQaBtn.innerHTML = originalIcon), 2000);
-    });
+    copyQaBtn.disabled = true;
+    navigator.clipboard.writeText(qaText)
+      .then(() => pmCopySuccess({
+        text: qaText,
+        pairCount: 1,
+        contentCount: hasSubmittedContent ? 1 : 0,
+      }))
+      .catch(() => {
+        renderError("复制失败，请检查浏览器剪贴板权限");
+      })
+      .finally(() => {
+        copyQaBtn.disabled = false;
+      });
   });
 
   const copyAnswerBtn = card.querySelector(".copy-answer-btn");
@@ -118,19 +129,47 @@ export function renderResult(summary, isSelection, context = {}) {
   // Expand / collapse for long answers
   const resultText = card.querySelector(".result-text");
   const expandBtn = card.querySelector(".result-expand-btn");
-  requestAnimationFrame(() => {
-    resultText.classList.add("clamped");
-    if (resultText.scrollHeight > resultText.clientHeight + 1) {
+  let isResultExpanded = false;
+  let expandMeasureFrame = 0;
+
+  const scheduleRefreshExpandState = () => {
+    cancelAnimationFrame(expandMeasureFrame);
+    expandMeasureFrame = requestAnimationFrame(refreshExpandState);
+  };
+
+  const refreshExpandState = () => {
+    resultText.classList.remove("clamped");
+
+    if (shouldCollapseResultText(resultText)) {
       expandBtn.style.display = "";
-      expandBtn.addEventListener("click", () => {
-        const isClamped = resultText.classList.toggle("clamped");
-        expandBtn.classList.toggle("expanded", !isClamped);
-        expandBtn.querySelector("span").textContent = isClamped ? "展开" : "收起";
-      });
+      resultText.classList.toggle("clamped", !isResultExpanded);
+      expandBtn.classList.toggle("expanded", isResultExpanded);
+      expandBtn.querySelector("span").textContent = isResultExpanded ? "收起" : "展开";
     } else {
+      expandBtn.style.display = "none";
+      expandBtn.classList.remove("expanded");
+      expandBtn.querySelector("span").textContent = "展开";
       resultText.classList.remove("clamped");
     }
+  };
+
+  expandBtn.addEventListener("click", () => {
+    isResultExpanded = !isResultExpanded;
+    resultText.classList.toggle("clamped", !isResultExpanded);
+    expandBtn.classList.toggle("expanded", isResultExpanded);
+    expandBtn.querySelector("span").textContent = isResultExpanded ? "收起" : "展开";
   });
+
+  scheduleRefreshExpandState();
+  document.fonts?.ready?.then(scheduleRefreshExpandState);
+
+  if ("ResizeObserver" in window) {
+    const expandResizeObserver = new ResizeObserver(scheduleRefreshExpandState);
+    expandResizeObserver.observe(card);
+    expandResizeObserver.observe(resultArea);
+  } else {
+    window.addEventListener("resize", scheduleRefreshExpandState);
+  }
 
   const submittedViewBtn = card.querySelector(".submitted-view-btn");
   submittedViewBtn?.addEventListener("click", () => {
@@ -157,6 +196,31 @@ export function renderResult(summary, isSelection, context = {}) {
       },
     })
   );
+}
+
+function toPixels(value) {
+  const parsed = Number.parseFloat(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function shouldCollapseResultText(resultText) {
+  const wasClamped = resultText.classList.contains("clamped");
+  resultText.classList.remove("clamped");
+
+  const style = getComputedStyle(resultText);
+  const lineHeight = toPixels(style.lineHeight);
+  if (!lineHeight) {
+    resultText.classList.toggle("clamped", wasClamped);
+    return false;
+  }
+
+  const paddingY = toPixels(style.paddingTop) + toPixels(style.paddingBottom);
+  const contentHeight = Math.max(0, resultText.scrollHeight - paddingY);
+  const maxContentHeight = lineHeight * RESULT_COLLAPSE_LINES;
+  const tolerance = Math.max(3, lineHeight * 0.2);
+
+  resultText.classList.toggle("clamped", wasClamped);
+  return contentHeight > maxContentHeight + tolerance;
 }
 
 function formatQaRecordText({ title = "", url = "", content = "", contentCharCount = 0, question = "", summary = "" }) {
@@ -206,27 +270,31 @@ let qaSelectActive = false;
 let qaBar = null;
 
 export function initQaSelectToggle() {
+  if (qaSelectActive) qaExit();
   qaSelectActive = false;
-  if (!resultArea.querySelector(".result-card")) return;
+  updateQaSelectControl();
+}
 
-  const btn = document.createElement("button");
-  btn.className = "qa-select-toggle";
-  btn.title = "多选对话记录，复制导出到其他 AI";
-  btn.innerHTML =
-    '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="6" height="6" rx="1"/><path d="M12 7h8"/><rect x="3" y="13" width="6" height="6" rx="1"/><path d="M12 15h8"/></svg><span>多选导出</span>';
-  btn.addEventListener("click", () => (qaSelectActive ? qaExit() : qaEnter()));
-  resultArea.prepend(btn);
+export function toggleQaSelectMode() {
+  if (!resultArea.querySelector(".result-card")) return;
+  qaSelectActive ? qaExit() : qaEnter();
+}
+
+function updateQaSelectControl() {
+  if (!qaSelectToggleBtn) return;
+  const hasResults = Boolean(resultArea.querySelector(".result-card"));
+  qaSelectToggleBtn.disabled = !hasResults;
+  qaSelectToggleBtn.classList.toggle("active", qaSelectActive);
+  qaSelectToggleBtn.title = qaSelectActive ? "取消多选导出" : "多选导出聊天记录";
+  qaSelectToggleBtn.setAttribute("aria-pressed", String(qaSelectActive));
+  const label = qaSelectToggleBtn.querySelector("span");
+  if (label) label.textContent = qaSelectActive ? "取消" : "多选导出聊天记录";
 }
 
 function qaEnter() {
   qaSelectActive = true;
   resultArea.classList.add("qa-select-mode");
-
-  const toggle = resultArea.querySelector(".qa-select-toggle");
-  if (toggle) {
-    toggle.querySelector("span").textContent = "取消";
-    toggle.classList.add("active");
-  }
+  updateQaSelectControl();
 
   // Wrap consecutive question → answer into .qa-pair
   const nodes = [...resultArea.children];
@@ -254,12 +322,7 @@ function qaExit() {
   qaSelectActive = false;
   resultArea.classList.remove("qa-select-mode");
   resultArea.removeEventListener("click", qaHandleClick);
-
-  const toggle = resultArea.querySelector(".qa-select-toggle");
-  if (toggle) {
-    toggle.querySelector("span").textContent = "多选";
-    toggle.classList.remove("active");
-  }
+  updateQaSelectControl();
 
   resultArea.querySelectorAll(".qa-pair").forEach((p) => {
     p.querySelector(".qa-check")?.remove();
@@ -357,12 +420,22 @@ function qaCopy() {
   sections.push(qaParts.join("\n\n---\n\n"));
 
   const text = sections.join("\n\n");
+  const copyBtn = qaBar?.querySelector('[data-qa="copy"]');
+  if (copyBtn) copyBtn.disabled = true;
 
-  navigator.clipboard.writeText(text).then(() => {
-    const btn = qaBar?.querySelector('[data-qa="copy"]');
-    if (btn) {
-      btn.textContent = "已复制 ✓";
-      setTimeout(() => { btn.textContent = "复制选中"; }, 1500);
-    }
-  });
+  navigator.clipboard.writeText(text)
+    .then(() => pmCopySuccess({
+      text,
+      pairCount: selected.length,
+      contentCount: contentBlocks.length,
+    }))
+    .then(() => {
+      qaExit();
+    })
+    .catch(() => {
+      renderError("复制失败，请检查浏览器剪贴板权限");
+    })
+    .finally(() => {
+      qaUpdateBar();
+    });
 }

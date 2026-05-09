@@ -2,6 +2,7 @@ import { drawerOverlay, attachmentMenu, promptInput } from "../lib/dom-refs.js";
 
 const DRAWER_LAYOUT_STORAGE_KEY = "gemini.sidepanel.drawerLayouts.v1";
 let drawerLayouts = loadDrawerLayouts();
+const openedDrawersThisSession = new Set();
 
 function resolveDrawerPanel(panel) {
   if (typeof panel === "string") return document.getElementById(panel);
@@ -21,7 +22,9 @@ export function openDrawer(panel) {
 
   closeAttachmentMenu();
   closeAllDrawers({ includePinned: false });
-  restoreDrawerLayout(drawerPanel);
+  const shouldCenterOnOpen = !openedDrawersThisSession.has(drawerPanel.id || "");
+  restoreDrawerLayout(drawerPanel, { centerPosition: shouldCenterOnOpen });
+  if (drawerPanel.id) openedDrawersThisSession.add(drawerPanel.id);
   drawerPanel.classList.add("active");
   syncDrawerOverlay();
 }
@@ -132,10 +135,16 @@ function resetDrawerLayout(panel) {
   panel.style.height = "";
 }
 
-function restoreDrawerLayout(panel) {
+function restoreDrawerLayout(panel, { centerPosition = false } = {}) {
   if (!isDrawerPanel(panel)) return;
 
   const savedLayout = drawerLayouts[panel.id];
+  if (centerPosition) {
+    resetDrawerLayout(panel);
+    if (savedLayout) resizeDrawer(panel, savedLayout.width, savedLayout.height);
+    return;
+  }
+
   if (savedLayout) {
     resizeDrawer(panel, savedLayout.width, savedLayout.height);
     positionDrawer(panel, savedLayout.left, savedLayout.top);

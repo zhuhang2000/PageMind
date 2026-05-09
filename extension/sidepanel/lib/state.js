@@ -2,6 +2,7 @@ let _lastResult = null;
 let _savedPrompts = [];
 let _editingPromptId = "";
 let _attachedImages = [];
+let _attachedFiles = [];
 let _currentPageData = null;
 let _contentModules = [];
 let _selectedModuleIds = new Set();
@@ -22,6 +23,9 @@ export function setEditingPromptId(v) { _editingPromptId = v; }
 
 export function getAttachedImages() { return _attachedImages; }
 export function setAttachedImages(v) { _attachedImages = v; }
+
+export function getAttachedFiles() { return _attachedFiles; }
+export function setAttachedFiles(v) { _attachedFiles = v; }
 
 export function getCurrentPageData() { return _currentPageData; }
 export function setCurrentPageDataRaw(v) { _currentPageData = v; }

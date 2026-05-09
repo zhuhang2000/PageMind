@@ -1,6 +1,6 @@
-import { resultArea, historyList, historyCount, clearHistoryBtn, historySearchInput } from "../lib/dom-refs.js";
+import { resultArea, historyList, historyCount, clearHistoryBtn, historySearchInput, historyDrawer } from "../lib/dom-refs.js";
 import { renderUserQuestion, renderResult, initQaSelectToggle } from "./results.js";
-import { openDrawerById } from "./drawers.js";
+import { closeDrawer, openDrawerById } from "./drawers.js";
 import { pmConfirm } from "./modal.js";
 
 const SESSION_STORAGE_KEY = "aiWebAssistant.sessions.v1";
@@ -54,15 +54,16 @@ function createSession({ title, pageTitle, pageUrl } = {}) {
   };
 }
 
-function createSessionMessage({ provider, question, content, summary }) {
+function createSessionMessage({ provider, question, instruction, content, summary }) {
   const contentText = String(content || "");
   const answerText = String(summary || "");
+  const questionText = String(question || instruction || "");
 
   return {
     id: makeHistoryId(),
     createdAt: Date.now(),
     provider: String(provider || "unknown"),
-    question: String(question || ""),
+    question: questionText,
     answer: answerText.slice(0, MAX_HISTORY_ANSWER_CHARS),
     contentPreview: contentText.slice(0, MAX_HISTORY_CONTENT_CHARS),
     contentCharCount: contentText.length,
@@ -162,6 +163,7 @@ async function loadSessions() {
   if (sessions.length === 0 && Array.isArray(result[LEGACY_HISTORY_STORAGE_KEY]) && result[LEGACY_HISTORY_STORAGE_KEY].length > 0) {
     sessions = trimSessions(migrateFlatHistory(result[LEGACY_HISTORY_STORAGE_KEY]));
     await chrome.storage.local.set({ [SESSION_STORAGE_KEY]: sessions });
+    await chrome.storage.local.remove(LEGACY_HISTORY_STORAGE_KEY);
   }
 
   activeSessionId = result[ACTIVE_SESSION_STORAGE_KEY] || sessions[0]?.id || "";
@@ -182,6 +184,7 @@ async function persistSessions() {
     [SESSION_STORAGE_KEY]: sessions,
     [ACTIVE_SESSION_STORAGE_KEY]: activeSessionId,
   });
+  await chrome.storage.local.remove(LEGACY_HISTORY_STORAGE_KEY);
 }
 
 export async function createNewSession({ title, pageTitle, pageUrl } = {}) {
@@ -227,6 +230,7 @@ async function switchSession(sessionId) {
   await persistSessions();
   renderActiveSession();
   renderSessionList();
+  closeDrawer(historyDrawer);
 }
 
 function startRenameSession(session, titleEl, titleText, renameBtn) {
@@ -302,7 +306,6 @@ export async function initHistory() {
 
 export async function openHistoryDrawer() {
   await loadSessions();
-  renderActiveSession();
   renderSessionList();
   openDrawerById("historyDrawer");
   historySearchInput?.focus({ preventScroll: true });
@@ -348,12 +351,16 @@ function renderResultPlaceholder() {
   placeholder.className = "result-placeholder";
   placeholder.innerHTML = `
     <div class="placeholder-icon-wrapper">
-      <svg class="generate-gemini-icon large" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M11.04 19.32Q12 21.51 12 24q0-2.49.93-4.68.96-2.19 2.58-3.81t3.81-2.55Q21.51 12 24 12q-2.49 0-4.68-.93a12.3 12.3 0 0 1-3.81-2.58 12.3 12.3 0 0 1-2.58-3.81Q12 2.49 12 0q0 2.49-.96 4.68-.93 2.19-2.55 3.81a12.3 12.3 0 0 1-3.81 2.58Q2.49 12 0 12q2.49 0 4.68.96 2.19.93 3.81 2.55t2.55 3.81"/>
+      <svg class="placeholder-brand-icon" viewBox="0 0 200 200" aria-hidden="true">
+        <rect width="200" height="200" rx="44" fill="#14181a"/>
+        <text x="30" y="148" font-family="'Instrument Serif', Fraunces, Georgia, serif" font-size="160" font-style="italic" font-weight="500" fill="#3d6249">P</text>
+        <text x="70" y="148" font-family="'Instrument Serif', Fraunces, Georgia, serif" font-size="150" font-style="italic" font-weight="500" fill="#f4efe4">m</text>
+        <rect x="24" y="156" width="150" height="2.4" fill="#c08a3e"/>
+        <circle cx="190" cy="155" r="7" fill="#c08a3e"/>
       </svg>
     </div>
-    <div class="placeholder-title">新会话</div>
-    <div class="placeholder-copy">输入问题后会保存在当前会话中</div>
+    <div class="placeholder-title">你好，我是 PageMind</div>
+    <div class="placeholder-copy">我可以帮你总结网页、分析图片或回答问题</div>
   `;
   resultArea.appendChild(placeholder);
 }
@@ -442,24 +449,6 @@ function createSessionItem(session) {
   switchBtn.disabled = session.id === activeSessionId;
   switchBtn.addEventListener("click", () => switchSession(session.id));
 
-  const copyBtn = document.createElement("button");
-  copyBtn.className = "mini-btn";
-  copyBtn.type = "button";
-  copyBtn.title = session.messages?.length ? "复制会话全部内容到剪贴板" : "会话暂无内容";
-  copyBtn.textContent = "复制全部";
-  copyBtn.disabled = !session.messages?.length;
-  copyBtn.addEventListener("click", async () => {
-    try {
-      await navigator.clipboard.writeText(formatSessionText(session));
-      copyBtn.textContent = "已复制 ✓";
-      copyBtn.classList.add("primary");
-      setTimeout(() => { copyBtn.textContent = "复制全部"; copyBtn.classList.remove("primary"); }, 1500);
-    } catch {
-      copyBtn.textContent = "复制失败";
-      setTimeout(() => { copyBtn.textContent = "复制全部"; }, 1500);
-    }
-  });
-
   const deleteBtn = document.createElement("button");
   deleteBtn.className = "mini-btn subtle-danger";
   deleteBtn.type = "button";
@@ -470,26 +459,12 @@ function createSessionItem(session) {
   header.appendChild(title);
   header.appendChild(count);
   actions.appendChild(switchBtn);
-  actions.appendChild(copyBtn);
   actions.appendChild(deleteBtn);
   row.appendChild(header);
   row.appendChild(meta);
   row.appendChild(preview);
   row.appendChild(actions);
   return row;
-}
-
-function formatSessionText(session) {
-  const header = [`会话：${session.title || ""}`, session.pageUrl ? `来源：${session.pageUrl}` : ""]
-    .filter(Boolean)
-    .join("\n");
-  const messages = [...(session.messages || [])]
-    .sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0))
-    .map((message, index) =>
-      [`第 ${index + 1} 轮`, `问题：\n${message.question || ""}`, `回答：\n${message.answer || ""}`].join("\n")
-    )
-    .join("\n\n");
-  return [header, messages].filter(Boolean).join("\n\n");
 }
 
 export const __historyInternals = {
