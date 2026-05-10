@@ -385,42 +385,37 @@ function qaCopy() {
   const selected = [...resultArea.querySelectorAll(".qa-pair.selected")];
   if (!selected.length) return;
 
-  // Collect Q&A pairs
-  const qaParts = [];
-  const seenContent = new Set();
-  const contentBlocks = [];
-  let pageTitle = "";
-  let pageUrl = "";
+  const groups = [];
+  const groupByContent = new Map();
 
   for (const pair of selected) {
     const q = pair.querySelector(".user-question-text")?.textContent?.trim() || "";
     const a = pair.querySelector(".result-text")?.textContent?.trim() || "";
-    qaParts.push(`问：${q}\n答：${a}`);
-
-    // Collect unique webpage content
     const card = pair.querySelector(".result-card");
     const exported = card?._qaExport;
-    if (exported) {
-      if (!pageTitle && exported.title) pageTitle = exported.title;
-      if (!pageUrl && exported.url) pageUrl = exported.url;
-      const content = exported.content?.trim();
-      if (content && !seenContent.has(content)) {
-        seenContent.add(content);
-        contentBlocks.push(content);
-      }
+
+    const content = exported?.content?.trim() || "";
+    const contentKey = normalizeExportContentKey(content);
+    let group = contentKey ? groupByContent.get(contentKey) : null;
+
+    if (!group) {
+      group = {
+        title: exported?.title || "",
+        url: exported?.url || "",
+        content,
+        qaParts: [],
+      };
+      groups.push(group);
+      if (contentKey) groupByContent.set(contentKey, group);
     }
+
+    group.qaParts.push(`问：${q || "无"}\n答：${a}`);
   }
 
-  // Build final text: header + content + Q&A
-  const sections = [];
-  if (pageTitle) sections.push(`网页标题：${pageTitle}`);
-  if (pageUrl) sections.push(`网页链接：${pageUrl}`);
-  if (contentBlocks.length) {
-    sections.push(`网页内容：\n${contentBlocks.join("\n\n")}`);
-  }
-  sections.push(qaParts.join("\n\n---\n\n"));
+  const sections = groups.map(formatQaExportGroup).filter(Boolean);
+  const contentCount = groups.filter((group) => group.content).length;
 
-  const text = sections.join("\n\n");
+  const text = sections.join("\n\n========== 以下为另一网页的内容 ==========\n\n");
   const copyBtn = qaBar?.querySelector('[data-qa="copy"]');
   if (copyBtn) copyBtn.disabled = true;
 
@@ -428,15 +423,26 @@ function qaCopy() {
     .then(() => pmCopySuccess({
       text,
       pairCount: selected.length,
-      contentCount: contentBlocks.length,
+      contentCount,
+      onAcknowledge: qaExit,
     }))
-    .then(() => {
-      qaExit();
-    })
     .catch(() => {
       renderError("复制失败，请检查浏览器剪贴板权限");
     })
     .finally(() => {
       qaUpdateBar();
     });
+}
+
+function normalizeExportContentKey(content) {
+  return String(content || "").replace(/\s+/g, " ").trim();
+}
+
+function formatQaExportGroup(group) {
+  const parts = [];
+  if (group.title) parts.push(`网页标题：${group.title}`);
+  if (group.url) parts.push(`网页链接：${group.url}`);
+  if (group.content) parts.push(`网页内容：\n${group.content}`);
+  parts.push(group.qaParts.join("\n\n"));
+  return parts.filter(Boolean).join("\n\n");
 }

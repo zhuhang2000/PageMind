@@ -1,4 +1,4 @@
-import { attachmentBtn, captureSnipBtn, imagePreviewList } from "../lib/dom-refs.js";
+import { attachmentBtn, imagePreviewList } from "../lib/dom-refs.js";
 import {
   MAX_FILE_BYTES,
   MAX_FILE_COUNT,
@@ -157,7 +157,6 @@ export async function captureWindowsSnip() {
 
 function setSnipButtonsDisabled(disabled) {
   attachmentBtn.disabled = disabled;
-  captureSnipBtn.disabled = disabled;
 }
 
 function removeImageAt(index) {

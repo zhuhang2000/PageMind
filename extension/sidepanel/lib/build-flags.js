@@ -7,4 +7,5 @@ export const RELEASE_MODE = RELEASE_MODES.OFFICIAL_RELEASE;
 
 export const FEATURE_FLAGS = Object.freeze({
   googleDocsExport: RELEASE_MODE === RELEASE_MODES.LOCAL_TEST,
+  screenshotCapture: RELEASE_MODE === RELEASE_MODES.LOCAL_TEST,
 });

@@ -9,9 +9,9 @@
     "scripting",
     "storage"
   ],
-  "host_permissions": [
-    "http://127.0.0.1:17777/*"
-  ],
+    "host_permissions": [
+    "https://api.openclaw-deploy.top/*"
+    ],
   "background": {
     "service_worker": "background.js",
     "type": "module"

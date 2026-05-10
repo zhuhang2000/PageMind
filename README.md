@@ -283,6 +283,7 @@ Side Panel 的 ES Module 前端应用目录。
 |---|---|---|
 | `extension/sidepanel/lib/api.js` | 统一封装 `/health`、`/summarize`、`/screenshot/windows-snip`、`/export/google-docs` 请求。 | 新增 bridge 接口时先在这里加方法；业务模块不要直接写散落的 `fetch`。 |
 | `extension/sidepanel/lib/constants.js` | 前端常量，例如 bridge URL、内容长度、图片数量和大小限制。 | 常量变更优先放这里；不要在功能模块重复硬编码。 |
+| `extension/sidepanel/lib/build-flags.js` | 发布模式和功能开关，例如 Google Docs 导出、Windows 截图入口。 | 正式发布默认用 `OFFICIAL_RELEASE`；本地能力或实验入口只在 `LOCAL_TEST` 打开。 |
 | `extension/sidepanel/lib/dom-refs.js` | 集中导出页面 DOM 引用。 | 新增 HTML ID 后在这里统一导出；避免跨文件重复查询 DOM。 |
 | `extension/sidepanel/lib/state.js` | Side Panel 共享运行时状态。 | 新增跨模块状态时用 getter/setter；单模块私有状态留在该模块内。 |
 | `extension/sidepanel/lib/text-utils.js` | 文本 normalize、preview 和 HTML escape。 | 只放纯函数，不依赖 DOM、不读写状态。 |

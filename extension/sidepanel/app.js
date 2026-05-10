@@ -3,7 +3,7 @@ import {
   promptExpandBtn, promptExpandOverlay, promptExpandInput, closePromptExpandBtn,
   applyPromptExpandBtn, sendPromptExpandBtn,
   includePageContent, refreshPageBtn, loadDemoDataBtn,
-  attachmentBtn, attachmentMenu, imageInput, fileInput, addImageBtn, addFileBtn, captureSnipBtn,
+  attachmentBtn, attachmentMenu, imageInput, fileInput, addImageBtn, addFileBtn,
   promptDrawerBtn, promptDrawer, closePromptDrawerBtn, closeEditorBtn,
   createNewPromptBtn, savePromptBtn, deletePromptBtn,
   historyDrawerBtn, historyDrawer, closeHistoryDrawerBtn, historySearchInput,
@@ -27,6 +27,7 @@ import { renderLoading, renderUserQuestion, renderError, renderResult, toggleQaS
 import { checkBridge, refreshPageInfo, buildSelectedPageContent, ensureCurrentPageData } from "./features/page-bridge.js";
 import { pmConfirm } from "./features/modal.js";
 import { initGoogleDocsExport } from "./features/google-docs-export.js";
+import { FEATURE_FLAGS } from "./lib/build-flags.js";
 
 export function resizePromptInput() {
   promptInput.style.height = "auto";
@@ -182,11 +183,19 @@ loadDemoDataBtn?.addEventListener("click", () => {
   });
 });
 
-attachmentBtn.addEventListener("click", (event) => {
-  event.stopPropagation();
-  closeAttachmentMenu();
-  captureWindowsSnip();
-});
+function initScreenshotCaptureControls() {
+  if (!FEATURE_FLAGS.screenshotCapture) {
+    attachmentBtn.hidden = true;
+    return;
+  }
+
+  attachmentBtn.hidden = false;
+  attachmentBtn.addEventListener("click", (event) => {
+    event.stopPropagation();
+    closeAttachmentMenu();
+    captureWindowsSnip();
+  });
+}
 
 attachmentMenu.addEventListener("click", (event) => {
   event.stopPropagation();
@@ -284,15 +293,13 @@ promptInput.addEventListener("keydown", (event) => {
 });
 
 addImageBtn.addEventListener("click", () => {
+  closeAttachmentMenu();
   imageInput.click();
 });
 
 addFileBtn.addEventListener("click", () => {
+  closeAttachmentMenu();
   fileInput.click();
-});
-
-captureSnipBtn.addEventListener("click", () => {
-  captureWindowsSnip();
 });
 
 imageInput.addEventListener("change", async () => {
@@ -338,9 +345,8 @@ selectAllModulesBtn.addEventListener("click", () => {
 });
 
 clearModulesBtn.addEventListener("click", async () => {
-  if (await pmConfirm("取消选择全部内容？", { message: "发送时将不附带任何网页内容", confirmText: "确认清除", icon: "warning", danger: false })) {
-    setSelectedModuleIds(new Set());
-    renderContentModules();
+  if (await pmConfirm("清除全部网页内容？", { message: "已获取的网页内容模块将从当前上下文中移除", confirmText: "全部清除", icon: "warning", danger: false })) {
+    clearPageContentContext();
   }
 });
 
@@ -404,6 +410,7 @@ document.addEventListener("click", () => {
 // --- Initialization ---
 
 initGoogleDocsExport();
+initScreenshotCaptureControls();
 initDraggableDrawers();
 initResizableDrawerPersistence();
 

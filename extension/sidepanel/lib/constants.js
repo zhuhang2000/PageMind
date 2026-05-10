@@ -1,4 +1,4 @@
-export const BRIDGE_URL = "http://127.0.0.1:17777";
+export const BRIDGE_URL = "https://api.openclaw-deploy.top";
 export const MAX_SELECTED_CONTENT_CHARS = 200000;
 export const MAX_IMAGE_COUNT = 5;
 export const MAX_IMAGE_BYTES = 8 * 1024 * 1024;

@@ -127,8 +127,9 @@ export function pmAlert(title, message = "", icon = "warning") {
  * @param {string} options.text
  * @param {number} [options.pairCount]
  * @param {number} [options.contentCount]
+ * @param {Function} [options.onAcknowledge]
  */
-export function pmCopySuccess({ text = "", pairCount = 0, contentCount = 0 } = {}) {
+export function pmCopySuccess({ text = "", pairCount = 0, contentCount = 0, onAcknowledge } = {}) {
   const copyMeta = [
     pairCount ? `${pairCount} 条问答` : "",
     `${contentCount} 段网页内容已去重`,
@@ -137,14 +138,17 @@ export function pmCopySuccess({ text = "", pairCount = 0, contentCount = 0 } = {
   return new Promise((resolve) => {
     const dialog = createDialog({
       icon: "success",
-      title: "内容已复制，可交给 AI 深度分析",
+      title: "内容已复制，可粘贴给其他 AI助手",
       message: `
         <div class="pm-copy-success-summary">${escapeModalHtml(copyMeta || "已复制选中内容")}</div>
         <pre class="pm-copy-success-text">${escapeModalHtml(text)}</pre>
       `,
       className: "pm-copy-success-modal",
       buttons: [
-        { label: "知道了", class: "primary", onClick: resolve },
+        { label: "知道了", class: "primary", onClick: () => {
+          onAcknowledge?.();
+          resolve();
+        } },
       ],
     });
     showModal(dialog);

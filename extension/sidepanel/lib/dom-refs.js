@@ -13,7 +13,6 @@ export const imageInput = $("imageInput");
 export const fileInput = $("fileInput");
 export const addImageBtn = $("addImageBtn");
 export const addFileBtn = $("addFileBtn");
-export const captureSnipBtn = $("captureSnipBtn");
 export const imagePreviewList = $("imagePreviewList");
 
 export const promptInput = $("promptInput");

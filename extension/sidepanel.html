@@ -105,7 +105,7 @@
 
     <div class="input-toolbar-row">
       <div class="input-actions-left">
-        <button class="attachment-btn" id="attachmentBtn" title="截屏识别" aria-label="截屏识别">
+        <button class="attachment-btn" id="attachmentBtn" title="截屏识别" aria-label="截屏识别" hidden>
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M7 3H5a2 2 0 0 0-2 2v2"></path>
             <path d="M17 3h2a2 2 0 0 1 2 2v2"></path>
@@ -135,10 +135,6 @@
             <svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6"></path><path d="M8 13h8"></path><path d="M8 17h5"></path></svg>
             上传文件
           </button>
-          <button class="menu-item" id="captureSnipBtn" title="截取屏幕区域进行识别">
-            <svg class="icon" viewBox="0 0 24 24"><path d="M7 3H5a2 2 0 0 0-2 2v2"></path><path d="M17 3h2a2 2 0 0 1 2 2v2"></path><path d="M21 17v2a2 2 0 0 1-2 2h-2"></path><path d="M7 21H5a2 2 0 0 1-2-2v-2"></path><path d="M8 12h8"></path><path d="M12 8v8"></path></svg>
-            截屏识别
-          </button>
         </div>
       </div>
 
@@ -152,9 +148,9 @@
           </svg>
           <span>放大编辑</span>
         </button>
-        <button class="prompt-drawer-btn prompt-template-open-btn" id="promptDrawerBtn" type="button" title="提示词模板">
+        <button class="prompt-drawer-btn prompt-template-open-btn" id="promptDrawerBtn" type="button" title="自定义提示词">
           <svg class="icon" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
-          <span>提示词模板</span>
+          <span>自定义提示词</span>
         </button>
         <button class="prompt-drawer-btn prompt-history-open-btn" id="historyDrawerBtn" type="button" title="会话管理">
           <svg class="icon" viewBox="0 0 24 24"><path d="M3 3v5h5"></path><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"></path><path d="M12 7v5l3 2"></path></svg>
@@ -271,7 +267,7 @@
         <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
         <span>全选</span>
       </button>
-      <button class="mini-btn subtle-danger" id="clearModulesBtn" type="button" title="清除已选内容模块">
+      <button class="mini-btn subtle-danger" id="clearModulesBtn" type="button" title="清除全部网页内容">
         <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18"></path><path d="M6 6l12 12"></path></svg>
         <span>清除</span>
       </button>

@@ -63,10 +63,10 @@ export async function refreshPageInfo({ extractContent = true } = {}) {
     renderContentModules();
     try {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      pageTitle.textContent = tab?.title || "无法读取当前标签页";
+      pageTitle.textContent = tab?.title || "当前网页内容还没准备好，刷新页面后再试试";
       pageUrl.textContent = tab?.url || "";
     } catch {
-      pageTitle.textContent = "无法读取当前标签页";
+      pageTitle.textContent = "当前网页内容还没准备好，刷新页面后再试试";
       pageUrl.textContent = "";
     }
   } finally {
