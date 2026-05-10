@@ -10,7 +10,7 @@ export async function summarize({
   content = "",
   images = [],
   instruction = "请用中文总结这个网页的核心观点",
-}) {
+}, { requestMeta = {} } = {}) {
   if (!content.trim() && (!Array.isArray(images) || images.length === 0)) {
     throw Object.assign(new Error("网页内容和图片都为空"), { statusCode: 400 });
   }
@@ -36,7 +36,15 @@ export async function summarize({
       images: savedImages.saved,
     });
 
-    const summary = await provider.run(prompt, { images: savedImages.saved });
+    const summary = await provider.run(prompt, {
+      images: savedImages.saved,
+      requestMeta: {
+        ...requestMeta,
+        provider: providerName,
+        routing: describeProviderRouting({ content, images }),
+        savedImageCount: savedImages.saved.length,
+      },
+    });
     console.log(`[bridge] ${providerName} 调用成功（${describeProviderRouting({ content, images })}）`);
     console.log(summary);
 

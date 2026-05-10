@@ -68,9 +68,29 @@ function getAuditLogPath() {
   return path.join(LOG_DIR, `audit-${date}.log`);
 }
 
+function formatAuditValue(value) {
+  if (value === undefined || value === null) return "";
+  if (typeof value === "string") return value;
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return String(value);
+  }
+}
+
+function formatAuditJson(value) {
+  try {
+    return JSON.stringify(value || {}, null, 2);
+  } catch {
+    return "{}";
+  }
+}
+
 function logAudit(params, result, error, meta = {}) {
   const timestamp = new Date().toLocaleString("zh-CN", { hour12: false });
   const separator = "=".repeat(80);
+  const auditMeta = params.auditMeta || meta.auditMeta || {};
+  const bodyMeta = auditMeta.body || {};
 
   const entry = [
     "",
@@ -78,17 +98,35 @@ function logAudit(params, result, error, meta = {}) {
     `[${timestamp}] TOOL: gemini_analyse_web`,
 
     `[REQUEST]`,
-    `> REQUEST_ID: ${meta.requestId || ""}`,
-    `> USER_ID: ${meta.userId || ""}`,
-    `> IP: ${meta.ip || ""}`,
-    `> USER_AGENT: ${meta.userAgent || ""}`,
-    `> REFERER: ${meta.referer || ""}`,
-    `> ORIGIN: ${meta.origin || ""}`,
-    `> METHOD: ${meta.method || ""}`,
-    `> URL: ${meta.url || ""}`,
+    `> JSONRPC_ID: ${formatAuditValue(meta.jsonrpcId)}`,
+    `> MCP_METHOD: ${formatAuditValue(meta.method)}`,
+    `> TOOL_NAME: ${formatAuditValue(meta.toolName)}`,
+    `> REQUEST_ID: ${formatAuditValue(auditMeta.requestId || meta.requestId)}`,
+    `> IP: ${formatAuditValue(auditMeta.ip || meta.ip)}`,
+    `> METHOD: ${formatAuditValue(auditMeta.method || meta.httpMethod)}`,
+    `> URL: ${formatAuditValue(auditMeta.url || meta.url)}`,
+    `> ROUTE: ${formatAuditValue(auditMeta.route)}`,
+    `> HOST: ${formatAuditValue(auditMeta.host)}`,
+    `> ORIGIN: ${formatAuditValue(auditMeta.origin || meta.origin)}`,
+    `> REFERER: ${formatAuditValue(auditMeta.referer || meta.referer)}`,
+    `> USER_AGENT: ${formatAuditValue(auditMeta.userAgent || meta.userAgent)}`,
+    `> CONTENT_TYPE: ${formatAuditValue(auditMeta.contentType)}`,
+    `> CONTENT_LENGTH: ${formatAuditValue(auditMeta.contentLength)}`,
 
     `[CONTEXT]`,
     `> CWD: ${params.cwd || process.cwd()}`,
+    `> PROVIDER: ${formatAuditValue(auditMeta.provider)}`,
+    `> ROUTING: ${formatAuditValue(auditMeta.routing)}`,
+    `> PROMPT_CHARS: ${String(params.prompt || "").length}`,
+    `> TIMEOUT_SECONDS: ${formatAuditValue(params.timeout)}`,
+    `> PROCESS_PID: ${process.pid}`,
+
+    `[PAYLOAD SUMMARY]`,
+    `> CONTENT_CHARS: ${formatAuditValue(bodyMeta.contentChars)}`,
+    `> INSTRUCTION_CHARS: ${formatAuditValue(bodyMeta.instructionChars)}`,
+    `> IMAGE_COUNT: ${formatAuditValue(bodyMeta.imageCount)}`,
+    `> SAVED_IMAGE_COUNT: ${formatAuditValue(auditMeta.savedImageCount)}`,
+    bodyMeta.images?.length ? `> IMAGES: ${formatAuditJson(bodyMeta.images)}` : "",
 
     `[PROMPT]`,
     params.prompt || "",
@@ -215,6 +253,7 @@ async function handleRequest(message) {
               prompt: { type: "string" },
               cwd: { type: "string" },
               timeout: { type: "number" },
+              auditMeta: { type: "object" },
             },
             required: ["prompt"],
             additionalProperties: false,
@@ -235,7 +274,11 @@ async function handleRequest(message) {
     }
 
     const result = await runGeminiAnalyseWeb(args);
-    logAudit(args, result);
+    logAudit(args, result, null, {
+      jsonrpcId: message.id,
+      method: message.method,
+      toolName: name,
+    });
     return makeTextResult(result.stdout || `错误: ${result.stderr || "Gemini CLI 未返回文本结果"}`);
   }
 
@@ -275,7 +318,11 @@ process.stdin.on("data", (chunk) => {
         writeResponse({ jsonrpc: "2.0", id: message.id, result });
       })
       .catch((err) => {
-        logAudit(message.params?.arguments || {}, null, err);
+        logAudit(message.params?.arguments || {}, null, err, {
+          jsonrpcId: message.id,
+          method: message.method,
+          toolName: message.params?.name || "",
+        });
         writeResponse({
           jsonrpc: "2.0",
           id: message.id,

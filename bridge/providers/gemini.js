@@ -94,6 +94,7 @@ export async function runGemini(prompt, options = {}) {
                         prompt: mcpPrompt,
                         cwd: mcpCwd,
                         timeout: Math.ceil(TIMEOUT_MS / 1000),
+                        auditMeta: options.requestMeta || {},
                     },
                 });
 
