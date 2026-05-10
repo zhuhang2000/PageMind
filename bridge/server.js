@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 
+import { checkBetaToken } from "./middleware/auth.js";
 import { errorHandler } from "./middleware/error-handler.js";
 import registerHealthRoute from "./routes/health.js";
 import registerSummarizeRoute from "./routes/summarize.js";
@@ -14,20 +15,36 @@ const ALLOWED_EXTENSION_ORIGIN = process.env.ALLOWED_EXTENSION_ORIGIN;
 const app = express();
 
 app.use(
-    cors({
-        origin: (origin, callback) => {
-            if (!origin || origin === ALLOWED_EXTENSION_ORIGIN) {
-                callback(null, true);
-            } else {
-                callback(new Error("不允许的来源"));
-            }
-        },
-    })
+  cors({
+    origin: (origin, callback) => {
+      // 允许无 Origin 请求，比如 curl、服务端请求
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      // 允许 Chrome 插件请求
+      if (origin.startsWith("chrome-extension://")) {
+        return callback(null, true);
+      }
+
+      // 允许你的正式网页/调试页面
+      const allowedOrigins = [
+        "https://api.openclaw-deploy.top"
+      ];
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error(`不允许的来源: ${origin}`));
+    },
+  })
 );
 
 app.use(express.json({ limit: "20mb" }));
 
 registerHealthRoute(app);
+app.use(checkBetaToken);
 registerSummarizeRoute(app);
 registerScreenshotRoute(app);
 registerGoogleDocsRoute(app);

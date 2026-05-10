@@ -1,10 +1,18 @@
-import { BRIDGE_URL } from "./constants.js";
+import { BRIDGE_URL, PAGEMIND_BETA_TOKEN } from "./constants.js";
 
 async function request(path, options = {}) {
   const { method = "POST", body, timeout = 120000 } = options;
+  const headers = {
+    "X-PageMind-Beta-Token": PAGEMIND_BETA_TOKEN,
+  };
+
+  if (body) {
+    headers["Content-Type"] = "application/json";
+  }
+
   const res = await fetch(`${BRIDGE_URL}${path}`, {
     method,
-    headers: body ? { "Content-Type": "application/json" } : undefined,
+    headers,
     body: body ? JSON.stringify(body) : undefined,
     signal: AbortSignal.timeout(timeout),
   });

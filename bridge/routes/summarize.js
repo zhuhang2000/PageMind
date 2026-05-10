@@ -1,8 +1,7 @@
-import { authMiddleware } from "../middleware/auth.js";
 import { summarize } from "../services/summarize-service.js";
 
 export default function registerSummarizeRoute(app) {
-  app.post("/summarize", authMiddleware, async (req, res, next) => {
+  app.post("/summarize", async (req, res, next) => {
     try {
       const result = await summarize(req.body, { requestMeta: buildRequestMeta(req) });
       res.json({ ok: true, ...result });
