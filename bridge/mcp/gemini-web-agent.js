@@ -68,19 +68,40 @@ function getAuditLogPath() {
   return path.join(LOG_DIR, `audit-${date}.log`);
 }
 
-function logAudit(params, result, error) {
+function logAudit(params, result, error, meta = {}) {
   const timestamp = new Date().toLocaleString("zh-CN", { hour12: false });
   const separator = "=".repeat(80);
+
   const entry = [
     "",
     separator,
     `[${timestamp}] TOOL: gemini_analyse_web`,
+
+    `[REQUEST]`,
+    `> REQUEST_ID: ${meta.requestId || ""}`,
+    `> USER_ID: ${meta.userId || ""}`,
+    `> IP: ${meta.ip || ""}`,
+    `> USER_AGENT: ${meta.userAgent || ""}`,
+    `> REFERER: ${meta.referer || ""}`,
+    `> ORIGIN: ${meta.origin || ""}`,
+    `> METHOD: ${meta.method || ""}`,
+    `> URL: ${meta.url || ""}`,
+
+    `[CONTEXT]`,
     `> CWD: ${params.cwd || process.cwd()}`,
-    `> PROMPT:\n${params.prompt || ""}`,
-    result?.command ? `> COMMAND:\n${result.command}` : "",
-    error ? `[STATUS] ERROR\n${error.message || String(error)}` : `[STATUS] ${result?.exitCode === 0 ? "SUCCESS" : `FAILED (${result?.exitCode})`}`,
+
+    `[PROMPT]`,
+    params.prompt || "",
+
+    result?.command ? `[COMMAND]\n${result.command}` : "",
+
+    error
+      ? `[STATUS] ERROR\n${error.message || String(error)}`
+      : `[STATUS] ${result?.exitCode === 0 ? "SUCCESS" : `FAILED (${result?.exitCode})`}`,
+
     result?.stdout ? `[RESPONSE STDOUT]:\n${result.stdout}` : "",
     result?.stderr ? `[RESPONSE STDERR]:\n${result.stderr}` : "",
+
     separator,
   ].filter(Boolean).join("\n");
 
