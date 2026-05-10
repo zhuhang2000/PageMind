@@ -7,8 +7,6 @@ const IMAGE_PROVIDER = "gemini";
 const SHORT_TEXT_MAX_CHARS = 2000;
 
 export async function summarize({
-  title = "",
-  url = "",
   content = "",
   images = [],
   instruction = "请用中文总结这个网页的核心观点",
@@ -33,14 +31,12 @@ export async function summarize({
     }
 
     const prompt = provider.buildPrompt({
-      title,
-      url,
       content,
       instruction,
       images: savedImages.saved,
     });
 
-    const summary = await provider.run(prompt);
+    const summary = await provider.run(prompt, { images: savedImages.saved });
     console.log(`[bridge] ${providerName} 调用成功（${describeProviderRouting({ content, images })}）`);
     console.log(summary);
 

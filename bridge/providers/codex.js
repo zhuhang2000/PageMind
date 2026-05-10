@@ -46,7 +46,7 @@ export async function runCodex(prompt) {
  * 构造发给 Codex 的完整 prompt
  * 明确禁止文件操作，确保只做文本分析
  */
-export function buildCodexPrompt({ title, url, content, instruction }) {
+export function buildCodexPrompt({ content, instruction }) {
     return buildWebAnalysisPrompt({
         role: `你是一个网页内容分析助手。请严格遵守以下规则：
 - 只分析用户提供的文本内容，给出回答
@@ -54,8 +54,6 @@ export function buildCodexPrompt({ title, url, content, instruction }) {
 - 禁止执行任何 shell 命令
 - 禁止创建任何计划任务或代码
 - 只输出文字回答`,
-        title,
-        url,
         content,
         instruction,
         instructionLabel: "用户指令",

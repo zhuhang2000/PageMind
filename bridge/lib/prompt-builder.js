@@ -5,8 +5,6 @@ const IMAGE_SECTION_END = "---用户上传图片结束---";
 
 export function buildWebAnalysisPrompt({
   role,
-  title = "",
-  url = "",
   content = "",
   instruction = "",
   instructionLabel = "任务指令",
@@ -16,7 +14,6 @@ export function buildWebAnalysisPrompt({
   footer,
 }) {
   const instructionBlock = `${instructionLabel}：${instruction}`;
-  const pageBlock = `网页标题：${title}\n网页URL：${url}`;
   const contentBlock = `${WEB_CONTENT_START}\n${content}\n${WEB_CONTENT_END}${buildImageSection({
     images,
     imageInstruction,
@@ -24,8 +21,8 @@ export function buildWebAnalysisPrompt({
 
   const sections =
     instructionPosition === "after-content"
-      ? [role, pageBlock, contentBlock, instructionBlock, footer]
-      : [role, instructionBlock, pageBlock, contentBlock, footer];
+      ? [role, contentBlock, instructionBlock, footer]
+      : [role, instructionBlock, contentBlock, footer];
 
   return sections.filter(Boolean).join("\n\n");
 }

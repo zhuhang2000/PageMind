@@ -1,7 +1,12 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const BRIDGE_ROOT = path.resolve(__dirname, "..");
 const GEMINI_MCP_ASSET_DIR = process.env.GEMINI_MCP_ASSET_DIR
+  ? path.resolve(BRIDGE_ROOT, process.env.GEMINI_MCP_ASSET_DIR)
+  : path.resolve(BRIDGE_ROOT, "assets", "gemini");
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 
 const MIME_EXT_MAP = {

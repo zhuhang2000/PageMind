@@ -133,6 +133,11 @@ function appendFiles(nextFiles) {
   renderImageAttachments();
 }
 
+export function clearAttachedImages() {
+  setAttachedImages([]);
+  renderImageAttachments();
+}
+
 export async function captureWindowsSnip() {
   setSnipButtonsDisabled(true);
 

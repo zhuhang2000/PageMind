@@ -51,6 +51,8 @@ chrome_plugin/
 │   ├── middleware/
 │   │   ├── auth.js                      # 本地 token 鉴权中间件
 │   │   └── error-handler.js             # 集中错误处理中间件
+│   ├── mcp/
+│   │   └── gemini-web-agent.js          # 内置 Gemini 网页分析 MCP shim
 │   ├── package.json                     # bridge 依赖和启动脚本
 │   ├── package-lock.json                # npm 锁文件
 │   ├── providers/
@@ -246,7 +248,7 @@ Side Panel 的 ES Module 前端应用目录。
 
 当前接入：
 
-- `gemini.js`：通过 Gemini MCP 子进程调用 `gemini_analyse_web`，支持图片。
+- `gemini.js`：通过 Gemini MCP 子进程调用 `gemini_analyse_web`，默认使用项目内置 `bridge/mcp/gemini-web-agent.js`，支持图片。
 - `deepseek.js`：通过 DeepSeek OpenAI-compatible chat completions API 调用，当前不支持图片。
 - `codex.js`：通过 `codex exec` 调用本地 Codex CLI，文本分析用途。
 - `registry.js`：provider 注册表，集中声明 provider 名称、调用函数、prompt builder 和图片能力。
@@ -337,6 +339,7 @@ Side Panel 的 ES Module 前端应用目录。
 | `bridge/services/google-docs-service.js` | 调用 Google Apps Script webhook 导出文档。 | webhook 请求、错误处理和脱敏日志放这里。 |
 | `bridge/providers/registry.js` | provider 名称到实现的注册表。 | 新增 provider 必须在这里注册能力和图片支持。 |
 | `bridge/providers/gemini.js` | Gemini MCP provider。 | Gemini-specific 调用细节留在这里，prompt 结构尽量复用 `prompt-builder.js`。 |
+| `bridge/mcp/gemini-web-agent.js` | 内置 Gemini 网页分析 MCP shim。 | 只实现 sidepanel 需要的 `gemini_analyse_web`；不要把通用项目分析工具混进来。 |
 | `bridge/providers/deepseek.js` | DeepSeek API provider。 | DeepSeek API payload、响应解析、错误处理放这里。 |
 | `bridge/providers/codex.js` | Codex CLI provider。 | Codex CLI 调用限制和安全指令放这里。 |
 | `bridge/providers/deepseek.test.js` | DeepSeek provider 测试函数。 | 后续可迁移到统一测试目录。 |

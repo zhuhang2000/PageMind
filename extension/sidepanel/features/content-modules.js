@@ -74,6 +74,14 @@ export function setCurrentPageData(pageData) {
   renderContentModules();
 }
 
+export function clearPageContentContext() {
+  setCurrentPageDataRaw(null);
+  setContentModules([]);
+  setSelectedModuleIds(new Set());
+  resetFullContentState();
+  renderContentModules();
+}
+
 export function getSelectedModules() {
   const contentModules = getContentModules();
   const selectedModuleIds = getSelectedModuleIds();

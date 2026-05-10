@@ -275,9 +275,11 @@ async function deleteSession(sessionId) {
   renderSessionList();
 }
 
-export async function clearHistoryRecords() {
-  sessions = [];
-  activeSessionId = "";
+export async function clearHistoryRecords({ title, pageTitle, pageUrl, createFreshSession = true } = {}) {
+  sessions = createFreshSession
+    ? [createSession({ title: title || pageTitle || "新会话", pageTitle, pageUrl })]
+    : [];
+  activeSessionId = sessions[0]?.id || "";
   await persistSessions();
   renderActiveSession();
   renderSessionList();

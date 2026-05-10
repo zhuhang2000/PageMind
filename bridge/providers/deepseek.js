@@ -75,11 +75,9 @@ export function readDeepSeekSummary(data) {
     return data?.choices?.[0]?.message?.content?.trim() || "";
 }
 
-export function buildDeepSeekPrompt({ title, url, content, instruction }) {
+export function buildDeepSeekPrompt({ content, instruction }) {
     return buildWebAnalysisPrompt({
         role: "你是一个网页内容分析助手。请分析用户提供的网页内容与任务指令。",
-        title,
-        url,
         content,
         instruction,
         footer: "请用中文回答，直接输出结果，不要重复引用原文，不要分析本地文件。",

@@ -15,12 +15,12 @@ import {
   clearFullContentSelectionsBtn, fullContentText,
   closeSubmittedContentBtn, submittedContentViewer,
 } from "./lib/dom-refs.js";
-import { getAttachedImages, setLastResult, getEditingPromptId, getCurrentPageData, getContentModules, getSelectedModuleIds, setSelectedModuleIds, getActiveFullContentAction } from "./lib/state.js";
+import { getAttachedImages, setLastResult, getEditingPromptId, getContentModules, getSelectedModuleIds, setSelectedModuleIds, getActiveFullContentAction } from "./lib/state.js";
 import { api } from "./lib/api.js";
 import { openDrawerById, closeAllDrawers, closeDrawer, closeAttachmentMenu, initDraggableDrawers, initResizableDrawerPersistence } from "./features/drawers.js";
 import { renderPromptList, openPromptEditor, savePrompt, deletePrompt, loadSavedPrompts } from "./features/prompts.js";
-import { addFiles, addImages, buildAttachedFileContent, captureWindowsSnip, renderImageAttachments } from "./features/images.js";
-import { renderContentModules } from "./features/content-modules.js";
+import { addFiles, addImages, buildAttachedFileContent, captureWindowsSnip, clearAttachedImages, renderImageAttachments } from "./features/images.js";
+import { clearPageContentContext, renderContentModules } from "./features/content-modules.js";
 import { closeFullContent, setFullContentAction, rememberFullContentSelection, removePendingSelectionAt, handleFullContentTextInput, isCurrentSelectionInsideFullContent, applyPendingFullContentSelections, clearPendingFullContentSelections, saveFullContentViewPosition } from "./features/full-content.js";
 import { saveHistoryRecord, openHistoryDrawer, handleHistorySearchInput, clearHistoryRecords, createNewSession, ensureActiveSession, initHistory } from "./features/history.js";
 import { renderLoading, renderUserQuestion, renderError, renderResult, toggleQaSelectMode } from "./features/results.js";
@@ -92,13 +92,16 @@ async function handleSummarize() {
   }
 
   try {
-    const pageData = await ensureCurrentPageData();
-    pageTitle.textContent = pageData.title || "未知标题";
+    const includePageContext = includePageContent.checked;
+    const pageData = includePageContext
+      ? await ensureCurrentPageData()
+      : { title: "", url: "", isSelection: false };
+    pageTitle.textContent = pageData.title || (includePageContext ? "未知标题" : "未附带网页");
     pageUrl.textContent = pageData.url || "";
 
     const selectedContent = [buildSelectedPageContent(), buildAttachedFileContent()].filter(Boolean).join("\n\n");
     const attachedImages = getAttachedImages();
-    if (includePageContent.checked && !selectedContent.trim() && attachedImages.length === 0) {
+    if (includePageContext && !selectedContent.trim() && attachedImages.length === 0) {
       throw new Error("请先勾选要发送的网页内容，或添加图片/文件");
     }
 
@@ -211,17 +214,24 @@ historySearchInput.addEventListener("input", handleHistorySearchInput);
 
 clearHistoryBtn.addEventListener("click", async () => {
   if (await pmConfirm("清空全部会话？", { message: "所有会话记录将被永久删除", confirmText: "全部清空" })) {
-    clearHistoryRecords();
+    await clearHistoryRecords();
+    clearCurrentSendContext();
+    closeDrawer(historyDrawer);
+    promptInput.focus();
   }
 });
 
+function clearCurrentSendContext() {
+  clearAttachedImages();
+  includePageContent.checked = false;
+  pageTitle.textContent = "未附带网页";
+  pageUrl.textContent = "";
+  clearPageContentContext();
+}
+
 newSessionBtn.addEventListener("click", async () => {
-  const currentPageData = getCurrentPageData();
-  await createNewSession({
-    title: currentPageData?.title || "新会话",
-    pageTitle: currentPageData?.title || "",
-    pageUrl: currentPageData?.url || "",
-  });
+  await createNewSession();
+  clearCurrentSendContext();
   closeDrawer(historyDrawer);
   promptInput.focus();
 });
