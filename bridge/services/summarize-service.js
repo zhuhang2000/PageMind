@@ -1,10 +1,12 @@
 import { getProvider } from "../providers/registry.js";
 import { saveRequestImages, cleanupFiles } from "./image-service.js";
 
-const DEFAULT_PROVIDER = process.env.DEFAULT_PROVIDER || "gemini";
+const SHORT_TEXT_PROVIDER = "deepseek";
+const LONG_TEXT_PROVIDER = "gemini";
+const IMAGE_PROVIDER = "gemini";
+const SHORT_TEXT_MAX_CHARS = 2000;
 
 export async function summarize({
-  provider: providerName = DEFAULT_PROVIDER,
   title = "",
   url = "",
   content = "",
@@ -15,6 +17,7 @@ export async function summarize({
     throw Object.assign(new Error("网页内容和图片都为空"), { statusCode: 400 });
   }
 
+  const providerName = selectProviderName({ content, images });
   const provider = getProvider(providerName);
 
   if (Array.isArray(images) && images.length > 0 && !provider.supportsImages) {
@@ -38,11 +41,38 @@ export async function summarize({
     });
 
     const summary = await provider.run(prompt);
-    console.log(`[bridge] ${providerName} 调用成功`);
+    console.log(`[bridge] ${providerName} 调用成功（${describeProviderRouting({ content, images })}）`);
     console.log(summary);
 
     return { provider: providerName, summary };
   } finally {
     await cleanupFiles(cleanupPaths);
   }
+}
+
+function selectProviderName({ content = "", images = [] }) {
+  if (hasImages(images)) {
+    return IMAGE_PROVIDER;
+  }
+
+  return getTextLength(content) < SHORT_TEXT_MAX_CHARS ? SHORT_TEXT_PROVIDER : LONG_TEXT_PROVIDER;
+}
+
+function describeProviderRouting({ content = "", images = [] }) {
+  if (hasImages(images)) {
+    return "包含图片，使用 Gemini";
+  }
+
+  const textLength = getTextLength(content);
+  return textLength < SHORT_TEXT_MAX_CHARS
+    ? `文本 ${textLength} 字，小于 ${SHORT_TEXT_MAX_CHARS}，使用 DeepSeek`
+    : `文本 ${textLength} 字，大于等于 ${SHORT_TEXT_MAX_CHARS}，使用 Gemini`;
+}
+
+function hasImages(images) {
+  return Array.isArray(images) && images.length > 0;
+}
+
+function getTextLength(content) {
+  return String(content || "").trim().length;
 }

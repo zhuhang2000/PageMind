@@ -1,9 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
-const GEMINI_MCP_ASSET_DIR =
-  process.env.GEMINI_MCP_ASSET_DIR ||
-  "C:\\Users\\hang\\mcp-servers\\gemini-agent-mcp\\logs\\prompts\\assets";
+const GEMINI_MCP_ASSET_DIR = process.env.GEMINI_MCP_ASSET_DIR
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 
 const MIME_EXT_MAP = {

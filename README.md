@@ -792,7 +792,7 @@ route -> service -> repository -> model/database
 
 - 增加 `extension/sidepanel/components/`，把跨 feature 复用的 DOM 组件从 feature 中进一步拆出。
 - 将 `app.js` 中的事件绑定拆成更小的 `initXxxEvents()`，避免入口继续增长。
-- 增加 provider 选择 UI，避免当前 `app.js` 中固定 `provider: "deepseek"`。
+- Provider 由 bridge 根据实际输入自动分流：包含图片走 Gemini，纯文本少于 2000 字走 DeepSeek，纯文本大于等于 2000 字走 Gemini；前端不应硬编码 provider。
 - 为 Side Panel 增加浏览器环境下的测试策略，替代旧的 `vm.runInContext()` 测试方式。
 - 将结果卡片附加动作形成插件式注册机制，Google Docs 导出已经是一个可参考模式。
 
@@ -867,10 +867,9 @@ cp .env.example .env
 
 ```env
 LOCAL_AI_PORT=17777
-DEFAULT_PROVIDER=gemini
 DEEPSEEK_API_KEY=
 GOOGLE_DOCS_WEBHOOK_URL=
 GOOGLE_DOCS_WEBHOOK_SECRET=
 ```
 
-注意：前端当前主流程在 `app.js` 中固定传入 `provider: "deepseek"`。如果要按 `.env` 的 `DEFAULT_PROVIDER` 走，需要同步调整前端请求体或增加 provider 选择 UI。
+注意：当前主流程由 `bridge/services/summarize-service.js` 根据提交内容自动选择 provider。前端不传 `provider` 字段，避免覆盖后端分流逻辑。

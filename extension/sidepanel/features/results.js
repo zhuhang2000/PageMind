@@ -40,7 +40,7 @@ export function renderResult(summary, isSelection, context = {}) {
   const lastResult = getLastResult();
   const tag = isSelection
     ? `<span class="result-tag selection">选中文本</span>`
-    : `<span class="result-tag ${escapeHtml(context.provider || "gemini")}">${escapeHtml(formatProviderLabel(context.provider))}</span>`;
+    : `<span class="result-tag ${escapeHtml(context.provider || "default")}">${escapeHtml(formatProviderLabel(context.provider))}</span>`;
   const qaText = formatQaRecordText({
     title: context.title || lastResult?.title || "",
     url: context.url || lastResult?.url || "",
@@ -60,10 +60,10 @@ export function renderResult(summary, isSelection, context = {}) {
     <div class="result-meta">
       ${tag}
       <div class="result-actions">
-        <button class="mini-action-btn copy-answer-btn" title="复制回复">
+        <button class="mini-action-btn copy-answer-btn" data-tooltip="复制回复" aria-label="复制回复">
           <svg class="icon" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
         </button>
-        <button class="mini-action-btn copy-qa-btn" title="复制完整上下文">
+        <button class="mini-action-btn copy-qa-btn" data-tooltip="复制完整内容" aria-label="复制完整内容">
           <svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6"></path><path d="M8 13h8"></path><path d="M8 17h5"></path></svg>
         </button>
       </div>
@@ -81,7 +81,7 @@ export function renderResult(summary, isSelection, context = {}) {
               <span class="submitted-content-count">${contentCharCount} 字${contentCharCount > submittedContent.length ? " · 已截断保存" : ""}</span>
             </summary>
             <div class="submitted-content-text">${escapeHtml(contentPreviewText)}</div>
-            <button class="mini-action-btn submitted-view-btn" type="button" title="查看提交全文">
+            <button class="mini-action-btn submitted-view-btn" type="button" data-tooltip="查看提交全文" aria-label="查看提交全文">
               <svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6"></path><path d="M8 13h8"></path><path d="M8 17h5"></path></svg>
               <span>查看全文</span>
             </button>
@@ -243,10 +243,11 @@ function formatQaRecordText({ title = "", url = "", content = "", contentCharCou
 }
 
 export function formatProviderLabel(provider) {
-  const value = String(provider || "gemini").toLowerCase();
+  const value = String(provider || "").toLowerCase();
   if (value === "deepseek") return "DeepSeek";
   if (value === "codex") return "Codex";
-  return "Gemini";
+  if (value === "gemini") return "Gemini";
+  return "默认模型";
 }
 
 function makeSubmittedContentPreview(text, maxLength = 260) {

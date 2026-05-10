@@ -9,7 +9,7 @@ function repeatParagraph(text, count) {
 function createDemoPageData() {
   const releaseNotes = [
     "## 模块：产品发布说明",
-    "AI 网页助手新增了会话管理、提交内容预览、复制完整上下文和 DeepSeek provider 路由。",
+    "AI 网页助手新增了会话管理、提交内容预览、复制完整上下文和按输入内容自动分流的 provider 路由。",
     "会话管理只负责组织本地问答，当前每次请求仍然是独立问题，不会自动携带上一轮问答历史。",
     "结果卡片右上角保留复制回复和复制完整上下文，提交内容区域只保留查看全文。",
   ].join("\n");
@@ -25,8 +25,8 @@ function createDemoPageData() {
 
   const providerNotes = [
     "## 模块：Provider 对照",
-    "Gemini：适合作为原始本地 bridge 的默认 provider。",
-    "DeepSeek：当前 sidepanel 请求体中使用 provider: \"deepseek\" 时，由 bridge/provider 分支调用 DeepSeek API。",
+    "Gemini：包含图片或文本大于等于 2000 字时使用。",
+    "DeepSeek：纯文本且少于 2000 字时使用。",
     "Codex：保留给本地 CLI 分析或开发者工作流，不作为普通网页总结默认入口。",
   ].join("\n");
 
@@ -86,7 +86,7 @@ function createDemoPageData() {
   };
 }
 
-function createDemoMessage({ id, createdAt, question, answer, content, provider = "deepseek", contentCharCount }) {
+function createDemoMessage({ id, createdAt, question, answer, content, provider = "demo", contentCharCount }) {
   const contentText = String(content || "");
   return {
     id,
@@ -123,7 +123,7 @@ function createDemoSessions(pageData = createDemoPageData()) {
           id: "demo-message-1",
           createdAt: now - 1000 * 60 * 35,
           question: "这个页面主要讲了什么？",
-          answer: "这个页面是一份 AI 网页助手的发布说明，重点介绍了会话管理、网页内容提交预览、复制完整上下文以及 DeepSeek provider 接入。它的核心变化是让用户可以在一个会话里组织多轮问答，同时每次请求仍保持独立。",
+          answer: "这个页面是一份 AI 网页助手的发布说明，重点介绍了会话管理、网页内容提交预览、复制完整上下文以及按输入内容自动分流的 provider 接入。它的核心变化是让用户可以在一个会话里组织多轮问答，同时每次请求仍保持独立。",
           content: shortContent,
         }),
         createDemoMessage({
@@ -172,8 +172,8 @@ function createDemoSessions(pageData = createDemoPageData()) {
           id: "demo-message-selection-1",
           createdAt: now - 1000 * 60 * 125,
           question: "只根据这段选中文本，解释 provider 切换逻辑",
-          answer: "这段文本说明 provider 字段只是前端请求体的一部分，真正调用哪家模型取决于 bridge 端是否根据 provider 分支路由。前端改成 deepseek 后，如果运行中的 bridge 仍走 gemini 分支，就需要重启或确认服务代码已加载。",
-          content: "选中文本：provider: \"deepseek\" 会随请求发送到本地 bridge；bridge 需要读取 provider 并进入 DeepSeek 调用分支，否则仍会使用默认 Gemini provider。",
+          answer: "这段文本说明当前前端不再发送 provider 字段，真正调用哪家模型取决于 bridge 对提交内容的判断：有图片走 Gemini，纯文本少于 2000 字走 DeepSeek，否则走 Gemini。",
+          content: "选中文本：sidepanel 请求不携带 provider；bridge 根据图片数量和文本长度进入对应 provider 分支。",
         }),
       ],
     },

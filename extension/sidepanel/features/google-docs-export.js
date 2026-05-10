@@ -1,5 +1,6 @@
 import { getLastResult } from "../lib/state.js";
 import { api } from "../lib/api.js";
+import { FEATURE_FLAGS } from "../lib/build-flags.js";
 import { renderError } from "./results.js";
 
 function buildGoogleDocsExportPayload({ title = "", url = "", summary = "" }) {
@@ -30,6 +31,8 @@ async function exportResultToGoogleDocs(button, input) {
 }
 
 export function initGoogleDocsExport() {
+  if (!FEATURE_FLAGS.googleDocsExport) return;
+
   document.addEventListener("aiWebAssistant:result-card-rendered", (event) => {
     const { card, summary, context = {} } = event.detail || {};
     const actions = card?.querySelector?.(".result-actions");
@@ -39,7 +42,8 @@ export function initGoogleDocsExport() {
     const button = document.createElement("button");
     button.className = "mini-action-btn google-docs-export-btn";
     button.type = "button";
-    button.title = "导出 Google Docs";
+    button.dataset.tooltip = "导出 Google Docs";
+    button.setAttribute("aria-label", "导出 Google Docs");
     button.innerHTML = `
       <svg class="icon" viewBox="0 0 24 24">
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>

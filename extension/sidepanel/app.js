@@ -111,7 +111,6 @@ async function handleSummarize() {
     resultArea.scrollTo({ top: resultArea.scrollHeight, behavior: "smooth" });
 
     const data = await api.summarize({
-      provider: "deepseek",
       title: pageData.title,
       url: pageData.url,
       content: selectedContent,
@@ -123,14 +122,14 @@ async function handleSummarize() {
       title: pageData.title || "AI 网页助手总结",
       url: pageData.url || "",
       question: instruction,
-      provider: data.provider || "deepseek",
+      provider: data.provider,
       contentPreview: selectedContent.slice(0, 20000),
       contentCharCount: selectedContent.length,
       summary: data.summary,
     });
 
     saveHistoryRecord({
-      provider: data.provider || "deepseek",
+      provider: data.provider,
       title: pageData.title,
       url: pageData.url,
       instruction,
@@ -144,7 +143,7 @@ async function handleSummarize() {
     if (loadingElem) loadingElem.remove();
 
     renderResult(data.summary, pageData.isSelection, {
-      provider: data.provider || "deepseek",
+      provider: data.provider,
       title: pageData.title,
       url: pageData.url,
       question: instruction,
