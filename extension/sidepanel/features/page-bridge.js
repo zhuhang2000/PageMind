@@ -54,6 +54,9 @@ export async function refreshPageInfo({ extractContent = true } = {}) {
   refreshPageBtn.disabled = true;
   try {
     const pageData = extractContent ? await getPageContent() : await getActiveTabMetadata();
+    if (extractContent && hasPagePayload(pageData)) {
+      includePageContent.checked = true;
+    }
     setCurrentPageData(pageData);
     pageTitle.textContent = pageData.title || "未知标题";
     pageUrl.textContent = pageData.url || "";
@@ -72,6 +75,12 @@ export async function refreshPageInfo({ extractContent = true } = {}) {
   } finally {
     refreshPageBtn.disabled = false;
   }
+}
+
+function hasPagePayload(pageData) {
+  if (pageData?.content?.trim()) return true;
+  return Array.isArray(pageData?.contentModules)
+    && pageData.contentModules.some((module) => module?.content?.trim());
 }
 
 async function getActiveTabMetadata() {

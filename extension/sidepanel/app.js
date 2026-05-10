@@ -77,6 +77,10 @@ function sendFromPromptExpandEditor() {
   summarizeBtn.click();
 }
 
+function clearResultPlaceholder() {
+  resultArea.querySelector(".result-placeholder")?.remove();
+}
+
 async function handleSummarize() {
   if (summarizeBtn.disabled) return;
 
@@ -88,9 +92,7 @@ async function handleSummarize() {
 
   summarizeBtn.disabled = true;
 
-  if (resultArea.querySelector(".result-placeholder")) {
-    resultArea.innerHTML = "";
-  }
+  clearResultPlaceholder();
 
   try {
     const includePageContext = includePageContent.checked;
@@ -110,6 +112,7 @@ async function handleSummarize() {
       pageTitle: pageData.title,
       pageUrl: pageData.url,
     });
+    clearResultPlaceholder();
     renderUserQuestion(instruction);
     renderLoading();
     resultArea.scrollTo({ top: resultArea.scrollHeight, behavior: "smooth" });
