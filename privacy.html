@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PageMind Privacy Policy</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.7;
+      color: #1f2937;
+      background: #f8fafc;
+    }
+
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 48px 20px 80px;
+    }
+
+    .card {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: #eff6ff;
+      color: #2563eb;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .lang-switch {
+      display: inline-flex;
+      gap: 6px;
+      padding: 4px;
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      border-radius: 999px;
+    }
+
+    .lang-switch button {
+      border: 0;
+      cursor: pointer;
+      padding: 7px 14px;
+      border-radius: 999px;
+      background: transparent;
+      color: #4b5563;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .lang-switch button.active {
+      background: #2563eb;
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+    }
+
+    h1 {
+      margin-top: 0;
+      font-size: 32px;
+      color: #111827;
+    }
+
+    h2 {
+      margin-top: 32px;
+      font-size: 20px;
+      color: #111827;
+      border-bottom: 1px solid #e5e7eb;
+      padding-bottom: 8px;
+    }
+
+    p, li {
+      font-size: 15px;
+    }
+
+    ul {
+      padding-left: 22px;
+    }
+
+    .updated {
+      color: #6b7280;
+      font-size: 14px;
+      margin-bottom: 28px;
+    }
+
+    .brand {
+      color: #2563eb;
+      font-weight: 600;
+    }
+
+    a {
+      color: #2563eb;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .footer {
+      margin-top: 40px;
+      color: #6b7280;
+      font-size: 14px;
+    }
+
+    .lang-content {
+      display: none;
+    }
+
+    .lang-content.active {
+      display: block;
+    }
+
+    @media (max-width: 640px) {
+      .card {
+        padding: 24px;
+      }
+
+      .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      h1 {
+        font-size: 26px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <section class="card">
+      <div class="topbar">
+        <span class="badge">PageMind</span>
+        <div class="lang-switch" aria-label="Language switch">
+          <button id="btn-zh" class="active" type="button">中文</button>
+          <button id="btn-en" type="button">English</button>
+        </div>
+      </div>
+
+      <div id="content-zh" class="lang-content active">
+        <h1>PageMind 隐私政策</h1>
+        <p class="updated">最后更新日期：2026 年 5 月 10 日</p>
+
+        <p>
+          <span class="brand">PageMind</span> 是一个浏览器扩展程序，帮助用户总结网页内容、
+          基于当前网页进行问答，并使用 AI 分析网页信息。本隐私政策说明 PageMind 会处理哪些信息，
+          以及这些信息将如何被使用。
+        </p>
+
+        <h2>1. 我们处理的信息</h2>
+        <p>
+          当你主动使用 PageMind 对网页进行总结、提问或分析时，扩展程序可能会处理以下信息：
+        </p>
+        <ul>
+          <li>你请求分析的当前网页内容。</li>
+          <li>当前网页的标题和 URL。</li>
+          <li>你在 PageMind 中输入的问题、提示词或操作指令。</li>
+          <li>为提供服务所需的基础技术信息，例如请求时间和错误日志。</li>
+        </ul>
+
+        <h2>2. 信息的使用方式</h2>
+        <p>
+          PageMind 处理这些信息仅用于提供扩展程序的核心功能，包括：
+        </p>
+        <ul>
+          <li>生成网页内容摘要。</li>
+          <li>基于网页内容回答用户问题。</li>
+          <li>分析网页文本、图片或其他用户主动请求处理的内容。</li>
+          <li>维护服务稳定性、排查错误并改进基础功能。</li>
+        </ul>
+
+        <h2>3. 数据传输</h2>
+        <p>
+          为了提供 AI 功能，PageMind 可能会将用户主动请求分析的网页内容和用户输入发送至 PageMind 后端服务：
+        </p>
+        <p>
+          <a href="https://api.openclaw-deploy.top" target="_blank" rel="noopener noreferrer">
+            https://api.openclaw-deploy.top
+          </a>
+        </p>
+        <p>
+          后端服务会处理相关内容，并将 AI 生成的结果返回给扩展程序。
+        </p>
+
+        <h2>4. 数据共享</h2>
+        <p>
+          PageMind 不出售用户数据，不会将用户数据用于广告投放、行为追踪、信用评估或与功能无关的第三方营销。
+        </p>
+        <p>
+          为提供用户主动请求的 AI 功能，部分内容可能会在必要时由第三方 AI 服务提供商处理。
+        </p>
+
+        <h2>5. 数据存储</h2>
+        <p>
+          PageMind 可能会在浏览器本地存储有限的设置信息，例如扩展偏好设置或临时状态。
+        </p>
+        <p>
+          我们不会主动收集敏感个人信息。用户应避免通过扩展程序提交密码、私密凭据、金融信息、
+          医疗信息或其他敏感数据。
+        </p>
+
+        <h2>6. 用户控制</h2>
+        <p>
+          PageMind 仅在用户主动使用扩展程序时处理网页内容。用户可以随时停止使用 PageMind，
+          或从浏览器中卸载该扩展程序。
+        </p>
+
+        <h2>7. 安全措施</h2>
+        <p>
+          PageMind 使用 HTTPS 与后端服务通信。我们会采取合理措施保护传输数据，并防止未经授权的访问。
+        </p>
+
+        <h2>8. 政策更新</h2>
+        <p>
+          我们可能会不时更新本隐私政策。任何变更都会发布在本页面，并更新日期。
+        </p>
+
+        <h2>9. 联系方式</h2>
+        <p>
+          如果你对本隐私政策或 PageMind 有任何问题，请通过以下方式联系我们：
+        </p>
+        <p>
+          <a href="mailto:2773118304@qq.com">2773118304@qq.com</a>
+        </p>
+
+        <div class="footer">
+          © 2026 PageMind. 保留所有权利。
+        </div>
+      </div>
+
+      <div id="content-en" class="lang-content">
+        <h1>PageMind Privacy Policy</h1>
+        <p class="updated">Last updated: May 10, 2026</p>
+
+        <p>
+          <span class="brand">PageMind</span> is a browser extension that helps users summarize web pages,
+          ask questions based on the current page, and analyze page content with AI.
+          This Privacy Policy explains what information PageMind processes and how it is used.
+        </p>
+
+        <h2>1. Information We Process</h2>
+        <p>
+          When you actively use PageMind to summarize, ask questions, or analyze a webpage,
+          the extension may process the following information:
+        </p>
+        <ul>
+          <li>The content of the current webpage selected or accessed for analysis.</li>
+          <li>The title and URL of the current webpage.</li>
+          <li>The questions, prompts, or instructions you enter into PageMind.</li>
+          <li>Basic technical information required to provide the service, such as request time and error logs.</li>
+        </ul>
+
+        <h2>2. How We Use Information</h2>
+        <p>
+          The information processed by PageMind is used only to provide the core functionality of the extension, including:
+        </p>
+        <ul>
+          <li>Generating summaries of webpage content.</li>
+          <li>Answering user questions based on webpage content.</li>
+          <li>Analyzing webpage text, images, or other user-requested content.</li>
+          <li>Improving stability, debugging errors, and maintaining the service.</li>
+        </ul>
+
+        <h2>3. Data Transmission</h2>
+        <p>
+          To provide AI-powered features, PageMind may send user-requested webpage content and user prompts
+          to the PageMind backend service:
+        </p>
+        <p>
+          <a href="https://api.openclaw-deploy.top" target="_blank" rel="noopener noreferrer">
+            https://api.openclaw-deploy.top
+          </a>
+        </p>
+        <p>
+          The backend service processes the content and returns the AI-generated result to the extension.
+        </p>
+
+        <h2>4. Data Sharing</h2>
+        <p>
+          PageMind does not sell user data. PageMind does not use user data for advertising,
+          behavioral tracking, credit evaluation, or unrelated third-party marketing.
+        </p>
+        <p>
+          Some content may be processed by third-party AI service providers only when necessary
+          to provide the user-requested AI functionality.
+        </p>
+
+        <h2>5. Data Storage</h2>
+        <p>
+          PageMind may store limited local settings in the browser, such as extension preferences
+          or temporary state required for functionality.
+        </p>
+        <p>
+          We do not intentionally collect sensitive personal information. Users should avoid submitting
+          passwords, private credentials, financial information, medical information, or other sensitive data
+          through the extension.
+        </p>
+
+        <h2>6. User Control</h2>
+        <p>
+          PageMind only processes webpage content when the user actively uses the extension.
+          Users can stop using PageMind at any time or uninstall the extension from the browser.
+        </p>
+
+        <h2>7. Security</h2>
+        <p>
+          PageMind uses HTTPS for communication with its backend service.
+          We take reasonable measures to protect transmitted data and prevent unauthorized access.
+        </p>
+
+        <h2>8. Changes to This Policy</h2>
+        <p>
+          We may update this Privacy Policy from time to time. Any changes will be posted on this page
+          with an updated date.
+        </p>
+
+        <h2>9. Contact</h2>
+        <p>
+          If you have questions about this Privacy Policy or PageMind, please contact:
+        </p>
+        <p>
+          <a href="mailto:2773118304@qq.com">2773118304@qq.com</a>
+        </p>
+
+        <div class="footer">
+          © 2026 PageMind. All rights reserved.
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const btnZh = document.getElementById("btn-zh");
+    const btnEn = document.getElementById("btn-en");
+    const contentZh = document.getElementById("content-zh");
+    const contentEn = document.getElementById("content-en");
+
+    function setLanguage(lang) {
+      const isZh = lang === "zh";
+
+      btnZh.classList.toggle("active", isZh);
+      btnEn.classList.toggle("active", !isZh);
+
+      contentZh.classList.toggle("active", isZh);
+      contentEn.classList.toggle("active", !isZh);
+
+      document.documentElement.lang = isZh ? "zh-CN" : "en";
+      localStorage.setItem("pagemind_privacy_lang", lang);
+    }
+
+    btnZh.addEventListener("click", () => setLanguage("zh"));
+    btnEn.addEventListener("click", () => setLanguage("en"));
+
+    const savedLang = localStorage.getItem("pagemind_privacy_lang");
+    const browserLang = navigator.language || "";
+
+    if (savedLang) {
+      setLanguage(savedLang);
+    } else if (browserLang.toLowerCase().startsWith("zh")) {
+      setLanguage("zh");
+    } else {
+      setLanguage("en");
+    }
+  </script>
+</body>
+</html>
