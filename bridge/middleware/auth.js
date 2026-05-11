@@ -1,11 +1,14 @@
 export function checkBetaToken(req, res, next) {
-  const expectedToken = process.env.PAGEMIND_BETA_TOKEN;
-  const token = req.headers["x-pagemind-beta-token"];
-
-  if (!expectedToken || token !== expectedToken) {
+  const inviteCodes = String(process.env.PAGEMIND_INVITE_CODES || "")
+    .split(",")
+    .map((code) => code.trim())
+    .filter(Boolean);
+  const inviteCode = String(req.headers["x-pagemind-invite-code"] || "").trim();
+    
+  if (inviteCodes.length === 0 || !inviteCodes.includes(inviteCode)) {
     return res.status(403).json({
       ok: false,
-      error: "无权访问内测接口",
+      error: "邀请码无效或已过期",
     });
   }
 

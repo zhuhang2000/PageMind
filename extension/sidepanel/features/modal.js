@@ -188,3 +188,65 @@ export function pmConfirm(title, options = {}) {
     showModal(dialog);
   });
 }
+
+/**
+ * 输入弹窗
+ * @param {string} title
+ * @param {object} [options]
+ * @param {string} [options.message]
+ * @param {string} [options.placeholder]
+ * @param {string} [options.initialValue]
+ * @param {string} [options.confirmText="保存"]
+ * @param {string} [options.cancelText="取消"]
+ * @returns {Promise<string|null>}
+ */
+export function pmPrompt(title, options = {}) {
+  const {
+    message = "",
+    placeholder = "",
+    initialValue = "",
+    confirmText = "保存",
+    cancelText = "取消",
+  } = options;
+
+  return new Promise((resolve) => {
+    const dialog = createDialog({
+      icon: "info",
+      title,
+      message,
+      className: "pm-prompt-modal",
+      buttons: [
+        { label: cancelText, class: "cancel", onClick: () => resolve(null) },
+        { label: confirmText, class: "primary", onClick: () => {
+          const input = dialog.querySelector(".pm-modal-input");
+          resolve(input?.value.trim() || "");
+        } },
+      ],
+    });
+
+    const messageEl = dialog.querySelector(".pm-modal-message");
+    const input = document.createElement("input");
+    input.className = "pm-modal-input";
+    input.type = "text";
+    input.placeholder = placeholder;
+    input.value = initialValue;
+    input.autocomplete = "off";
+    input.spellcheck = false;
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" && !event.isComposing) {
+        event.preventDefault();
+        dialog.querySelector(".pm-modal-btn.primary")?.click();
+      }
+    });
+
+    if (messageEl) {
+      messageEl.after(input);
+    } else {
+      dialog.querySelector(".pm-modal-actions")?.before(input);
+    }
+
+    showModal(dialog);
+    input.focus({ preventScroll: true });
+    input.select();
+  });
+}

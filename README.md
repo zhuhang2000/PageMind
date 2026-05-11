@@ -49,7 +49,7 @@ chrome_plugin/
 │   │   ├── parse-json.js                # 后端 JSON 解析工具
 │   │   └── prompt-builder.js            # 后端统一 prompt 构建工具
 │   ├── middleware/
-│   │   ├── auth.js                      # 本地 token 鉴权中间件
+│   │   ├── auth.js                      # 邀请码鉴权中间件
 │   │   └── error-handler.js             # 集中错误处理中间件
 │   ├── mcp/
 │   │   └── gemini-web-agent.js          # 内置 Gemini 网页分析 MCP shim
@@ -346,7 +346,7 @@ Side Panel 的 ES Module 前端应用目录。
 | `bridge/providers/deepseek.test.js` | DeepSeek provider 测试函数。 | 后续可迁移到统一测试目录。 |
 | `bridge/providers/base.js` | 旧版 provider 基类。 | 当前主流程未使用；后续应明确保留或删除。 |
 | `bridge/providers/openai.js` | 旧版 OpenAI provider。 | 当前主流程未使用；未注册前不要依赖。 |
-| `bridge/middleware/auth.js` | Bearer token 鉴权。 | 只做鉴权，不做业务校验。 |
+| `bridge/middleware/auth.js` | 邀请码鉴权。 | 只做鉴权，不做业务校验；邀请码放在后端 `.env`。 |
 | `bridge/middleware/error-handler.js` | 统一错误响应。 | service 抛出的 `statusCode` 在这里转 HTTP 状态。 |
 | `bridge/lib/parse-json.js` | JSON 解析工具，支持从 stdout 中反向寻找 JSON。 | CLI/PowerShell stdout 解析复用这里。 |
 | `bridge/lib/prompt-builder.js` | 统一构造网页分析 prompt 和图片段落。 | Provider prompt 去重优先在这里做。 |
@@ -787,7 +787,7 @@ route -> service -> repository -> model/database
 10. 修改影响范围可控：优先小步修改和验证，不做无关大重构。
 11. 保持运行路径单一：Chrome 扩展主流程以 `extension/` + `bridge/` 为准，`deepseek-demo/` 只作为实验 demo。
 12. 处理 provider 差异：不要假设每个 provider 都支持图片、同样的超时或同样的 API key 方式。
-13. 本地敏感配置不进代码：API key、token、webhook secret 只放 `.env`。
+13. 本地敏感配置不进代码：API key、邀请码、webhook secret 只放 `.env`。
 14. Windows 脚本细节集中：截图相关 PowerShell 细节只放 `bridge/scripts/` 和 `screenshot-service.js`。
 
 ## 10. 后续可扩展方向

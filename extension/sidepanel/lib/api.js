@@ -1,10 +1,14 @@
-import { BRIDGE_URL, PAGEMIND_BETA_TOKEN } from "./constants.js";
+import { BRIDGE_URL } from "./constants.js";
+import { getInviteCode } from "./invite-code.js";
 
 async function request(path, options = {}) {
   const { method = "POST", body, timeout = 120000 } = options;
-  const headers = {
-    "X-PageMind-Beta-Token": PAGEMIND_BETA_TOKEN,
-  };
+  const headers = {};
+  const inviteCode = getInviteCode();
+
+  if (inviteCode) {
+    headers["X-PageMind-Invite-Code"] = inviteCode;
+  }
 
   if (body) {
     headers["Content-Type"] = "application/json";
@@ -16,8 +20,12 @@ async function request(path, options = {}) {
     body: body ? JSON.stringify(body) : undefined,
     signal: AbortSignal.timeout(timeout),
   });
-  const data = await res.json();
-  if (!data.ok) throw new Error(data.error || "Bridge 返回未知错误");
+  const data = await res.json().catch(() => ({ ok: false, error: "Bridge 返回格式错误" }));
+  if (!res.ok || !data.ok) {
+    const error = new Error(data.error || "Bridge 返回未知错误");
+    error.status = res.status;
+    throw error;
+  }
   return data;
 }
 

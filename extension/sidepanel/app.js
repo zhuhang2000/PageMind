@@ -25,9 +25,10 @@ import { closeFullContent, setFullContentAction, rememberFullContentSelection, r
 import { saveHistoryRecord, openHistoryDrawer, handleHistorySearchInput, clearHistoryRecords, createNewSession, ensureActiveSession, initHistory } from "./features/history.js";
 import { renderLoading, renderUserQuestion, renderError, renderResult, toggleQaSelectMode } from "./features/results.js";
 import { checkBridge, refreshPageInfo, buildSelectedPageContent, ensureCurrentPageData } from "./features/page-bridge.js";
-import { pmConfirm } from "./features/modal.js";
+import { pmConfirm, pmPrompt } from "./features/modal.js";
 import { initGoogleDocsExport } from "./features/google-docs-export.js";
 import { FEATURE_FLAGS } from "./lib/build-flags.js";
+import { clearInviteCode, getInviteCode, saveInviteCode } from "./lib/invite-code.js";
 
 export function resizePromptInput() {
   promptInput.style.height = "auto";
@@ -35,6 +36,7 @@ export function resizePromptInput() {
 }
 
 let isPromptExpandOpen = false;
+let pendingInviteCodePrompt = null;
 
 function syncMainPromptFromExpanded() {
   promptInput.value = promptExpandInput.value;
@@ -81,12 +83,37 @@ function clearResultPlaceholder() {
   resultArea.querySelector(".result-placeholder")?.remove();
 }
 
+async function ensureInviteCode() {
+  const currentCode = getInviteCode();
+  if (currentCode) return currentCode;
+  if (pendingInviteCodePrompt) return pendingInviteCodePrompt;
+
+  pendingInviteCodePrompt = pmPrompt("请输入邀请码", {
+    message: "邀请码会保存在当前浏览器本地，用于访问 PageMind 内测接口。",
+    placeholder: "输入邀请码",
+    confirmText: "保存并发送",
+  }).then((code) => {
+    if (code === null) return "";
+    return saveInviteCode(code);
+  }).finally(() => {
+    pendingInviteCodePrompt = null;
+  });
+
+  return pendingInviteCodePrompt;
+}
+
 async function handleSummarize() {
   if (summarizeBtn.disabled) return;
 
   const instruction = promptInput.value.trim();
   if (!instruction) {
     renderError("请先输入问题或提示词");
+    return;
+  }
+
+  const inviteCode = await ensureInviteCode();
+  if (!inviteCode) {
+    renderError("请先输入邀请码");
     return;
   }
 
@@ -164,6 +191,11 @@ async function handleSummarize() {
   } catch (err) {
     const loadingElem = resultArea.querySelector(".loading");
     if (loadingElem) loadingElem.remove();
+    if (err.status === 401 || err.status === 403) {
+      clearInviteCode();
+      renderError("邀请码无效或已过期，请重新输入后再试");
+      return;
+    }
     renderError(err.message || "发生未知错误，请检查 bridge 服务是否启动");
   } finally {
     summarizeBtn.disabled = false;
