@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PageMind 用户使用指南</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17201d;
+      --muted: #5c6864;
+      --line: #d7dfda;
+      --paper: #f7f4ec;
+      --surface: #ffffff;
+      --surface-soft: #eef4ef;
+      --accent: #0f6b57;
+      --accent-strong: #0a4a3c;
+      --gold: #c88726;
+      --shadow: 0 18px 48px rgba(31, 48, 43, 0.12);
+      --radius: 8px;
+      font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        linear-gradient(90deg, rgba(15, 107, 87, 0.045) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(15, 107, 87, 0.045) 1px, transparent 1px),
+        var(--paper);
+      background-size: 34px 34px;
+      line-height: 1.7;
+    }
+
+    a { color: inherit; }
+    p { margin: 0; }
+
+    .shell {
+      width: min(1160px, calc(100% - 36px));
+      margin: 0 auto;
+    }
+
+    .hero {
+      min-height: 78vh;
+      display: grid;
+      grid-template-columns: minmax(0, 0.92fr) minmax(320px, 1.08fr);
+      gap: 46px;
+      align-items: center;
+      padding: 58px 0 38px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 22px;
+      color: var(--accent-strong);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 34px;
+      height: 2px;
+      background: var(--gold);
+    }
+
+    h1, h2, h3 {
+      margin: 0;
+      line-height: 1.16;
+      letter-spacing: 0;
+    }
+
+    h1 {
+      max-width: 650px;
+      font-size: clamp(38px, 7vw, 82px);
+      font-weight: 900;
+    }
+
+    h2 {
+      font-size: clamp(28px, 4vw, 48px);
+      font-weight: 850;
+    }
+
+    h3 {
+      font-size: 21px;
+      font-weight: 820;
+    }
+
+    .lead {
+      max-width: 640px;
+      margin-top: 22px;
+      color: var(--muted);
+      font-size: 18px;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 30px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 0 18px;
+      border: 1px solid var(--accent);
+      border-radius: 999px;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 800;
+      text-decoration: none;
+      box-shadow: 0 12px 26px rgba(15, 107, 87, 0.18);
+    }
+
+    .button.secondary {
+      background: rgba(255, 255, 255, 0.7);
+      color: var(--accent-strong);
+      box-shadow: none;
+    }
+
+    .hero-shot {
+      position: relative;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.72);
+      box-shadow: var(--shadow);
+      transform: rotate(1.3deg);
+    }
+
+    .hero-shot img,
+    .shot img {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: 6px;
+      border: 1px solid rgba(23, 32, 29, 0.08);
+      background: #fff;
+    }
+
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      background: rgba(247, 244, 236, 0.92);
+      backdrop-filter: blur(14px);
+    }
+
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      min-height: 58px;
+    }
+
+    .brand {
+      font-weight: 900;
+      color: var(--accent-strong);
+    }
+
+    .nav-links {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 6px;
+    }
+
+    .nav-links a {
+      padding: 8px 10px;
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .nav-links a:hover {
+      background: var(--surface-soft);
+      color: var(--accent-strong);
+    }
+
+    section {
+      padding: 78px 0;
+      border-bottom: 1px solid rgba(23, 32, 29, 0.1);
+    }
+
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 28px;
+      margin-bottom: 30px;
+    }
+
+    .section-head p {
+      max-width: 560px;
+      color: var(--muted);
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .step,
+    .feature,
+    .note {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.72);
+      box-shadow: 0 10px 28px rgba(31, 48, 43, 0.06);
+    }
+
+    .step { padding: 18px; }
+
+    .num {
+      display: inline-grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      margin-bottom: 18px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 900;
+    }
+
+    .step p,
+    .feature p,
+    .note p,
+    li { color: var(--muted); }
+
+    .workflow {
+      display: grid;
+      grid-template-columns: minmax(260px, 0.78fr) minmax(0, 1.22fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    .feature-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .feature { padding: 18px; }
+
+    .feature strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--ink);
+      font-size: 17px;
+    }
+
+    .shot-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .shot {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .shot figcaption {
+      padding: 14px 16px 16px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .shot figcaption strong {
+      display: block;
+      margin-bottom: 3px;
+      color: var(--ink);
+      font-size: 15px;
+    }
+
+    .tips {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 16px;
+    }
+
+    .note { padding: 22px; }
+
+    .note ul {
+      margin: 12px 0 0;
+      padding-left: 20px;
+    }
+
+    .band {
+      background: #17362f;
+      color: #f7f4ec;
+    }
+
+    .band .section-head p,
+    .band li,
+    .band .note p { color: rgba(247, 244, 236, 0.75); }
+
+    .band .note {
+      border-color: rgba(247, 244, 236, 0.16);
+      background: rgba(255, 255, 255, 0.06);
+      box-shadow: none;
+    }
+
+    footer {
+      padding: 34px 0 44px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    @media (max-width: 920px) {
+      .hero,
+      .workflow,
+      .tips { grid-template-columns: 1fr; }
+      .steps,
+      .shot-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .hero { min-height: auto; }
+    }
+
+    @media (max-width: 620px) {
+      .shell { width: min(100% - 24px, 1160px); }
+      .hero { padding-top: 34px; }
+      .nav-inner,
+      .section-head {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+      .nav-links { justify-content: flex-start; }
+      .steps,
+      .shot-grid { grid-template-columns: 1fr; }
+      section { padding: 54px 0; }
+    }
+  </style>
+</head>
+<body>
+  <header class="shell hero" id="top">
+    <div>
+      <p class="eyebrow">Chrome 网页 AI 助手</p>
+      <h1>PageMind 用户使用指南</h1>
+      <p class="lead">PageMind 的设计初心是减少来回切换页面的时间。以前需要复制网页内容、打开其他 AI 窗口、再粘贴提问；现在可以直接在浏览器右侧完成网页收集、提问、初步理解和结果导出。</p>
+      <div class="hero-actions">
+        <a class="button" href="#features">查看核心功能</a>
+        <a class="button secondary" href="#workflow">了解使用流程</a>
+      </div>
+    </div>
+    <figure class="hero-shot">
+      <img src="./webpage_analyse.png" alt="PageMind 网页分析界面图">
+    </figure>
+  </header>
+
+  <nav class="nav" aria-label="页面导航">
+    <div class="shell nav-inner">
+      <a class="brand" href="#top">PageMind Guide</a>
+      <div class="nav-links">
+        <a href="#features">功能</a>
+        <a href="#workflow">流程</a>
+        <a href="#screens">界面</a>
+        <a href="#tips">说明</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <section id="features">
+      <div class="shell">
+        <div class="section-head">
+          <h2>核心功能</h2>
+          <p>你可以在右侧侧边栏中完成网页阅读辅助，不用在多个页面、多个 AI 对话窗口之间来回复制粘贴。</p>
+        </div>
+        <div class="steps">
+          <article class="step">
+            <span class="num">1</span>
+            <h3>右侧快速提问</h3>
+            <p>遇到简单问题时，直接在右侧输入问题即可获得初步理解，适合快速读懂概念、观点、步骤和页面重点。</p>
+          </article>
+          <article class="step">
+            <span class="num">2</span>
+            <h3>多网页内容汇总</h3>
+            <p>可以保存多个网页内容，让 AI 基于你收集的多个页面一起回复，适合对比资料、整理信息和做初步研究。</p>
+          </article>
+          <article class="step">
+            <span class="num">3</span>
+            <h3>独立问题回答</h3>
+            <p>模型不会默认记住之前的上下文，只基于你提供的网页内容和本次提问回答，避免无关历史影响结果质量。</p>
+          </article>
+          <article class="step">
+            <span class="num">4</span>
+            <h3>完整记录导出</h3>
+            <p>需要深度探索时，可以一键导出完整对话记录，包括网页内容、你的提问和模型的初步回复。</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="workflow">
+      <div class="shell workflow">
+        <div>
+          <h2>一次完整使用流程</h2>
+          <p class="lead">日常使用时，可以按“收集内容、选择范围、提出问题、保存结果”的顺序完成一次网页分析。</p>
+        </div>
+        <div class="feature-list">
+          <article class="feature">
+            <strong>收集一个或多个网页内容</strong>
+            <p>浏览网页时，把需要参考的页面内容保存到内容管理中。后续提问时，AI 会围绕你选中的网页内容进行回复。</p>
+          </article>
+          <article class="feature">
+            <strong>筛选本次要参考的内容</strong>
+            <p>在网页内容管理中保留真正相关的模块，去掉导航、广告、评论或其他干扰信息。内容越干净，回答越聚焦。</p>
+          </article>
+          <article class="feature">
+            <strong>提出本次独立问题</strong>
+            <p>每次提问都按独立任务处理。即使你前后问的是完全不相干的问题，也不会被上一轮对话上下文牵着走。</p>
+          </article>
+          <article class="feature">
+            <strong>导出初步探索结果</strong>
+            <p>如果回答值得继续深挖，可以导出网页内容、提问和模型回复，作为后续整理、复盘或继续分析的材料。</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="screens">
+      <div class="shell">
+        <div class="section-head">
+          <h2>界面功能说明</h2>
+          <p>下面几张界面图对应 PageMind 的主要使用区域。当前公测版本暂不提供截屏分析功能。</p>
+        </div>
+        <div class="shot-grid">
+          <figure class="shot">
+            <img src="./webpage_manage.png" alt="网页内容管理界面图">
+            <figcaption><strong>网页内容管理</strong>保存和筛选多个网页内容，控制本次提问参考哪些页面信息。</figcaption>
+          </figure>
+          <figure class="shot">
+            <img src="./prompt.png" alt="提示词输入和模板界面图">
+            <figcaption><strong>问题与提示词</strong>输入本次独立问题，也可以复用常用提示词，减少重复输入。</figcaption>
+          </figure>
+          <figure class="shot">
+            <img src="./copy_result.png" alt="结果复制界面图">
+            <figcaption><strong>结果复制与导出</strong>保留网页内容、提问和模型初步回复，方便后续深度探索。</figcaption>
+          </figure>
+          <figure class="shot">
+            <img src="./chat_history.png" alt="历史会话界面图">
+            <figcaption><strong>历史会话</strong>按会话保存近期问答，方便之后搜索、回看和继续整理。</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <section class="band" id="tips">
+      <div class="shell">
+        <div class="section-head">
+          <h2>回答边界与当前策略</h2>
+          <p>PageMind 更适合处理明确的阅读任务。它不会把历史对话自动塞进下一次问题中，而是优先尊重你本次选择的网页内容。</p>
+        </div>
+        <div class="tips">
+          <article class="note">
+            <h3>模型如何回答</h3>
+            <ul>
+              <li>每次回答只基于你提供的网页内容和本次提问。</li>
+              <li>当前主要使用 Gemini；少于 2000 字的文本会直接调用 DeepSeek。</li>
+              <li>公测版本暂不提供截屏分析能力，后续会根据使用反馈再开放。</li>
+            </ul>
+          </article>
+          <article class="note">
+            <h3>后续设想</h3>
+            <ul>
+              <li>未来考虑支持把模型回复追加到网页内容管理中。</li>
+              <li>这个方向会更接近 NotebookLM：把网页内容、初步回复和后续整理沉淀为一个可继续分析的资料库。</li>
+              <li>保留“问题独立”的默认体验，避免不相关上下文干扰回答质量。</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="shell">
+    <p>PageMind 用户使用指南。当前页面用于说明公测版本的主要使用方式和功能边界。</p>
+  </footer>
+</body>
+</html>
