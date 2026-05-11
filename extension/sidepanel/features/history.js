@@ -329,6 +329,7 @@ export function renderActiveSession() {
 
   if (!active || !active.messages?.length) {
     renderResultPlaceholder();
+    initQaSelectToggle();
     return;
   }
 

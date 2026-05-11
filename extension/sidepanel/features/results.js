@@ -196,6 +196,7 @@ export function renderResult(summary, isSelection, context = {}) {
       },
     })
   );
+  updateQaSelectControl();
 }
 
 function toPixels(value) {
