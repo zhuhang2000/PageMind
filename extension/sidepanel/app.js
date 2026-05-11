@@ -20,7 +20,7 @@ import { api } from "./lib/api.js";
 import { openDrawerById, closeAllDrawers, closeDrawer, closeAttachmentMenu, initDraggableDrawers, initResizableDrawerPersistence } from "./features/drawers.js";
 import { renderPromptList, openPromptEditor, savePrompt, deletePrompt, loadSavedPrompts } from "./features/prompts.js";
 import { addFiles, addImages, buildAttachedFileContent, captureWindowsSnip, clearAttachedImages, renderImageAttachments } from "./features/images.js";
-import { clearPageContentContext, renderContentModules } from "./features/content-modules.js";
+import { clearPageContentContext, renderContentModules, CONTENT_CONTEXT_CHANGED_EVENT } from "./features/content-modules.js";
 import { closeFullContent, setFullContentAction, rememberFullContentSelection, removePendingSelectionAt, handleFullContentTextInput, isCurrentSelectionInsideFullContent, applyPendingFullContentSelections, clearPendingFullContentSelections, saveFullContentViewPosition } from "./features/full-content.js";
 import { saveHistoryRecord, openHistoryDrawer, handleHistorySearchInput, clearHistoryRecords, createNewSession, ensureActiveSession, initHistory } from "./features/history.js";
 import { renderLoading, renderUserQuestion, renderError, renderResult, toggleQaSelectMode } from "./features/results.js";
@@ -286,6 +286,7 @@ drawerOverlay.addEventListener("click", () => {
   if (fullViewer?.classList.contains("active")) {
     closeFullContent({ save: true });
     renderContentModules();
+    document.dispatchEvent(new CustomEvent(CONTENT_CONTEXT_CHANGED_EVENT));
     openDrawerById("contentPreviewPanel");
     return;
   }
@@ -363,6 +364,7 @@ fileInput.addEventListener("change", async () => {
 
 includePageContent.addEventListener("change", () => {
   renderContentModules();
+  document.dispatchEvent(new CustomEvent(CONTENT_CONTEXT_CHANGED_EVENT));
 });
 
 expandContentPanelBtn.addEventListener("click", () => {
@@ -377,6 +379,7 @@ selectAllModulesBtn.addEventListener("click", () => {
   const contentModules = getContentModules();
   setSelectedModuleIds(new Set(contentModules.map((module) => module.id)));
   renderContentModules();
+  document.dispatchEvent(new CustomEvent(CONTENT_CONTEXT_CHANGED_EVENT));
 });
 
 clearModulesBtn.addEventListener("click", async () => {
@@ -390,6 +393,7 @@ closePreviewBtn.addEventListener("click", () => closeDrawer(contentPreviewPanel)
 closeFullContentBtn.addEventListener("click", () => {
   closeFullContent({ save: true });
   renderContentModules();
+  document.dispatchEvent(new CustomEvent(CONTENT_CONTEXT_CHANGED_EVENT));
   openDrawerById("contentPreviewPanel");
 });
 

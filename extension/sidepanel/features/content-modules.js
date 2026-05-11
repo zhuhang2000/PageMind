@@ -4,6 +4,41 @@ import { normalizePanelText, makePanelPreview } from "../lib/text-utils.js";
 import { openFullContent, resetFullContentState } from "./full-content.js";
 import { pmConfirm } from "./modal.js";
 
+export const CONTENT_CONTEXT_CHANGED_EVENT = "aiWebAssistant:content-context-changed";
+
+let isApplyingContext = false;
+
+export function getCurrentContentContext() {
+  return {
+    modules: getContentModules().map((module) => ({ ...module })),
+    selectedIds: [...getSelectedModuleIds()],
+    includeChecked: includePageContent?.checked ?? false,
+  };
+}
+
+export function applyContentContext(ctx) {
+  isApplyingContext = true;
+  try {
+    const modules = Array.isArray(ctx?.modules) ? ctx.modules.map((module) => ({ ...module })) : [];
+    const selectedIds = Array.isArray(ctx?.selectedIds) ? ctx.selectedIds : [];
+    setContentModules(modules);
+    setSelectedModuleIds(new Set(selectedIds));
+    setCurrentPageDataRaw(null);
+    resetFullContentState();
+    if (includePageContent) {
+      includePageContent.checked = Boolean(ctx?.includeChecked) && modules.length > 0;
+    }
+    renderContentModules();
+  } finally {
+    isApplyingContext = false;
+  }
+}
+
+function notifyContentContextChanged() {
+  if (isApplyingContext) return;
+  document.dispatchEvent(new CustomEvent(CONTENT_CONTEXT_CHANGED_EVENT));
+}
+
 function normalizeContentModules(pageData) {
   const modules = Array.isArray(pageData?.contentModules) ? pageData.contentModules : [];
   if (modules.length > 0) return modules;
@@ -72,6 +107,7 @@ export function setCurrentPageData(pageData) {
   setSelectedModuleIds(newSelectedIds);
   resetFullContentState();
   renderContentModules();
+  notifyContentContextChanged();
 }
 
 export function clearPageContentContext() {
@@ -80,6 +116,7 @@ export function clearPageContentContext() {
   setSelectedModuleIds(new Set());
   resetFullContentState();
   renderContentModules();
+  notifyContentContextChanged();
 }
 
 export function getSelectedModules() {
@@ -104,6 +141,7 @@ export async function removeContentModule(moduleId) {
   }
 
   renderContentModules();
+  notifyContentContextChanged();
 }
 
 function normalizeModuleLabel(label) {
@@ -125,6 +163,7 @@ export function renameContentModule(moduleId, nextLabel) {
     fullContentTitle.title = label;
   }
   renderContentModules();
+  notifyContentContextChanged();
   return true;
 }
 
@@ -282,6 +321,7 @@ export function renderContentModules() {
         item.classList.remove("selected");
       }
       renderContentModules();
+      notifyContentContextChanged();
     });
 
     item.addEventListener("click", (e) => {

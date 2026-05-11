@@ -390,7 +390,10 @@ function addPendingFullContentSelections() {
   const result = addManualContentModule({ sourceModule, content: selectedText, labelPrefix: "摘录文本" });
   if (result) {
     // Dynamically import to avoid circular dependency at module load time
-    import("./content-modules.js").then(({ renderContentModules }) => renderContentModules());
+    import("./content-modules.js").then(({ renderContentModules, CONTENT_CONTEXT_CHANGED_EVENT }) => {
+      renderContentModules();
+      document.dispatchEvent(new CustomEvent(CONTENT_CONTEXT_CHANGED_EVENT));
+    });
   }
   return result;
 }

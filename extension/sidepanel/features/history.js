@@ -2,6 +2,7 @@ import { resultArea, historyList, historyCount, clearHistoryBtn, historySearchIn
 import { renderUserQuestion, renderResult, initQaSelectToggle } from "./results.js";
 import { closeDrawer, openDrawerById } from "./drawers.js";
 import { pmConfirm } from "./modal.js";
+import { getCurrentContentContext, applyContentContext, CONTENT_CONTEXT_CHANGED_EVENT } from "./content-modules.js";
 
 const SESSION_STORAGE_KEY = "aiWebAssistant.sessions.v1";
 const LEGACY_HISTORY_STORAGE_KEY = "aiWebAssistant.history.v1";
@@ -10,11 +11,13 @@ const MAX_SESSIONS = 20;
 const MAX_TOTAL_MESSAGES = 50;
 const MAX_HISTORY_CONTENT_CHARS = 20000;
 const MAX_HISTORY_ANSWER_CHARS = 5000;
+const MAX_STORED_MODULE_CONTENT_CHARS = 50000;
 
 let sessions = [];
 let activeSessionId = "";
 let sessionSearchQuery = "";
 let sessionSearchTimer = null;
+let contentContextSaveTimer = null;
 
 function makeHistoryId() {
   if (globalThis.crypto?.randomUUID) return crypto.randomUUID();
@@ -187,11 +190,64 @@ async function persistSessions() {
   await chrome.storage.local.remove(LEGACY_HISTORY_STORAGE_KEY);
 }
 
+function trimContentContextForStorage(ctx) {
+  if (!ctx || !Array.isArray(ctx.modules) || ctx.modules.length === 0) return null;
+  const modules = ctx.modules.map((module) => {
+    const content = String(module.content || "");
+    return {
+      id: module.id,
+      label: module.label || "",
+      content: content.slice(0, MAX_STORED_MODULE_CONTENT_CHARS),
+      preview: module.preview || content.slice(0, 260),
+      charCount: content.length,
+      selectorHint: module.selectorHint || "",
+      sourceUrl: module.sourceUrl || "",
+      sourceTitle: module.sourceTitle || "",
+      isManualSelection: module.isManualSelection || false,
+      isEdited: module.isEdited || false,
+      isRenamed: module.isRenamed || false,
+      defaultChecked: ctx.selectedIds?.includes(module.id) ?? module.defaultChecked ?? true,
+    };
+  });
+  return {
+    modules,
+    selectedIds: Array.isArray(ctx.selectedIds) ? ctx.selectedIds : [],
+    includeChecked: Boolean(ctx.includeChecked),
+  };
+}
+
+function saveContentContextToActiveSession() {
+  const active = sessions.find((session) => session.id === activeSessionId);
+  if (!active) return;
+  const ctx = getCurrentContentContext();
+  active.contentContext = trimContentContextForStorage(ctx);
+  active.updatedAt = Date.now();
+}
+
+function debouncedSaveContentContext() {
+  clearTimeout(contentContextSaveTimer);
+  contentContextSaveTimer = setTimeout(async () => {
+    saveContentContextToActiveSession();
+    await persistSessions();
+  }, 400);
+}
+
+function restoreContentContextForSession(session) {
+  const ctx = session?.contentContext;
+  if (ctx && Array.isArray(ctx.modules) && ctx.modules.length > 0) {
+    applyContentContext(ctx);
+  } else {
+    applyContentContext({ modules: [], selectedIds: [], includeChecked: false });
+  }
+}
+
 export async function createNewSession({ title, pageTitle, pageUrl } = {}) {
+  saveContentContextToActiveSession();
   const session = createSession({ title, pageTitle, pageUrl });
   sessions = [session, ...sessions];
   activeSessionId = session.id;
   await persistSessions();
+  restoreContentContextForSession(session);
   renderActiveSession();
   renderSessionList();
   return session;
@@ -226,8 +282,11 @@ export async function saveHistoryRecord(input) {
 
 async function switchSession(sessionId) {
   if (!sessions.some((session) => session.id === sessionId)) return;
+  saveContentContextToActiveSession();
   activeSessionId = sessionId;
   await persistSessions();
+  const active = sessions.find((session) => session.id === sessionId);
+  restoreContentContextForSession(active);
   renderActiveSession();
   renderSessionList();
   closeDrawer(historyDrawer);
@@ -269,6 +328,8 @@ async function deleteSession(sessionId) {
   sessions = sessions.filter((session) => session.id !== sessionId);
   if (activeSessionId === sessionId) {
     activeSessionId = sessions[0]?.id || "";
+    const active = sessions.find((session) => session.id === activeSessionId);
+    restoreContentContextForSession(active);
   }
   await persistSessions();
   renderActiveSession();
@@ -281,6 +342,8 @@ export async function clearHistoryRecords({ title, pageTitle, pageUrl, createFre
     : [];
   activeSessionId = sessions[0]?.id || "";
   await persistSessions();
+  const active = sessions.find((session) => session.id === activeSessionId);
+  restoreContentContextForSession(active);
   renderActiveSession();
   renderSessionList();
 }
@@ -294,6 +357,8 @@ export async function loadDemoSessions(inputSessions, nextActiveSessionId = "", 
   if (options.persist === true) {
     await persistSessions();
   }
+  const active = sessions.find((session) => session.id === activeSessionId);
+  restoreContentContextForSession(active);
   renderActiveSession();
   renderSessionList();
   return sessions;
@@ -301,8 +366,11 @@ export async function loadDemoSessions(inputSessions, nextActiveSessionId = "", 
 
 export async function initHistory() {
   await loadSessions();
+  const active = sessions.find((session) => session.id === activeSessionId);
+  restoreContentContextForSession(active);
   renderActiveSession();
   renderSessionList();
+  document.addEventListener(CONTENT_CONTEXT_CHANGED_EVENT, debouncedSaveContentContext);
   return sessions;
 }
 
