@@ -29,7 +29,7 @@ app.use(
 
       // 允许你的正式网页/调试页面
       const allowedOrigins = [
-        "https://api.openclaw-deploy.top"
+        "https://beta-api.openclaw-deploy.top"
       ];
 
       if (allowedOrigins.includes(origin)) {

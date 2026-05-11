@@ -10,7 +10,7 @@
     "storage"
   ],
     "host_permissions": [
-    "https://api.openclaw-deploy.top/*"
+    "https://beta-api.openclaw-deploy.top/*"
     ],
   "background": {
     "service_worker": "background.js",
