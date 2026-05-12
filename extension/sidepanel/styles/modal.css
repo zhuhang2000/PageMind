@@ -235,3 +235,44 @@
   word-break: break-word;
   overflow: auto;
 }
+
+/* Choice modal — vertical option buttons */
+.pm-choice-modal .pm-modal-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  margin-top: 14px;
+}
+
+.pm-modal-btn.choice {
+  width: 100%;
+  height: 42px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  color: var(--ink);
+  font-family: var(--wenkai);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pm-modal-btn.choice:hover {
+  border-color: var(--brand);
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+
+.pm-modal-btn.choice:active {
+  transform: scale(0.97);
+}
+
+.pm-modal-btn.choice:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}

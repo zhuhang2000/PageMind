@@ -206,6 +206,8 @@ function trimContentContextForStorage(ctx) {
       isManualSelection: module.isManualSelection || false,
       isEdited: module.isEdited || false,
       isRenamed: module.isRenamed || false,
+      isQaNote: module.isQaNote || false,
+      sourceModuleIds: Array.isArray(module.sourceModuleIds) ? module.sourceModuleIds : [],
       defaultChecked: ctx.selectedIds?.includes(module.id) ?? module.defaultChecked ?? true,
     };
   });

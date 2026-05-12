@@ -128,6 +128,11 @@
 
 .result-actions { display: flex; gap: 4px; }
 
+/* 加入素材按钮成功状态 */
+.add-to-module-btn.success {
+  color: var(--success);
+}
+
 .result-text {
   font-family: var(--wenkai);
   font-size: 15px;

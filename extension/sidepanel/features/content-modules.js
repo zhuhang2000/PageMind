@@ -119,6 +119,26 @@ export function clearPageContentContext() {
   notifyContentContextChanged();
 }
 
+export function clearSelectedModules() {
+  const contentModules = getContentModules();
+  const selectedModuleIds = getSelectedModuleIds();
+  if (selectedModuleIds.size === 0) return;
+
+  const remaining = contentModules.filter((module) => !selectedModuleIds.has(module.id));
+
+  // If a full-content view is open for a selected module, close it
+  const activeId = getActiveFullContentModuleId();
+  if (activeId && selectedModuleIds.has(activeId)) {
+    resetFullContentState();
+  }
+
+  setContentModules(remaining);
+  setSelectedModuleIds(new Set());
+  setCurrentPageDataRaw(null);
+  renderContentModules();
+  notifyContentContextChanged();
+}
+
 export function getSelectedModules() {
   const contentModules = getContentModules();
   const selectedModuleIds = getSelectedModuleIds();
@@ -127,6 +147,19 @@ export function getSelectedModules() {
 
 export function getSelectedContentLength() {
   return getSelectedModules().reduce((sum, module) => sum + (module.content?.length || 0), 0);
+}
+
+export function addQaNoteModule(moduleData) {
+  const contentModules = getContentModules();
+  const selectedModuleIds = getSelectedModuleIds();
+  const id = `${Date.now()}-${contentModules.length}-${moduleData.id || "qa"}`;
+  const module = { ...moduleData, id };
+  contentModules.push(module);
+  setContentModules(contentModules);
+  selectedModuleIds.add(id);
+  renderContentModules();
+  notifyContentContextChanged();
+  return id;
 }
 
 export async function removeContentModule(moduleId) {
@@ -201,6 +234,153 @@ function startEditingModuleTitle(module, titleElement) {
   });
 }
 
+// Track which QA children groups are expanded (keyed by parent module id or "orphan")
+const expandedQaGroups = new Set();
+
+function renderModuleItem(module, { isEnabled, selectedModuleIds, contentModules, isChild = false }) {
+  const item = document.createElement("div");
+  item.className = isChild ? "content-module-item qa-child-item" : "content-module-item";
+  item.dataset.moduleId = module.id;
+  if (selectedModuleIds.has(module.id)) item.classList.add("selected");
+
+  const header = document.createElement("div");
+  header.className = "module-header";
+
+  const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  icon.setAttribute("viewBox", "0 0 24 24");
+  if (module.isQaNote) {
+    icon.setAttribute("class", "icon module-type-icon qa-note-icon");
+    icon.innerHTML = '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>';
+  } else {
+    icon.setAttribute("class", "icon module-type-icon");
+    icon.innerHTML = '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline>';
+  }
+
+  const title = document.createElement("div");
+  title.className = "module-title";
+  title.textContent = module.label || "内容模块";
+  title.title = module.label || "内容模块";
+
+  let typeTag = null;
+  if (module.isQaNote) {
+    typeTag = document.createElement("span");
+    typeTag.className = "module-type-tag qa-note-tag";
+    typeTag.textContent = "问答笔记";
+  }
+
+  const checkbox = document.createElement("input");
+  checkbox.type = "checkbox";
+  checkbox.className = "module-checkbox";
+  checkbox.checked = selectedModuleIds.has(module.id);
+  checkbox.disabled = !isEnabled;
+
+  const preview = document.createElement("div");
+  preview.className = "module-preview";
+  preview.textContent = module.preview || module.content || "";
+
+  const footer = document.createElement("div");
+  footer.className = "module-footer";
+
+  const count = document.createElement("span");
+  count.className = "module-count";
+  count.textContent = `${module.charCount || module.content?.length || 0} 字`;
+
+  const actions = document.createElement("div");
+  actions.className = "module-actions";
+
+  const viewBtn = document.createElement("button");
+  viewBtn.className = "mini-btn view-btn";
+  viewBtn.type = "button";
+  viewBtn.title = "打开全文并摘录或编辑文本";
+  viewBtn.innerHTML = '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"></path><path d="M18 3h-6v6"></path><path d="M12 9 21 0"></path><path d="M8 13h8"></path><path d="M8 17h5"></path></svg><span>全文</span>';
+
+  const renameBtn = document.createElement("button");
+  renameBtn.className = "mini-btn rename-btn";
+  renameBtn.type = "button";
+  renameBtn.title = "修改文档标题";
+  renameBtn.innerHTML = '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"></path></svg><span>重命名</span>';
+
+  const deleteBtn = document.createElement("button");
+  deleteBtn.className = "mini-btn delete-btn subtle-danger";
+  deleteBtn.type = "button";
+  deleteBtn.title = "删除这个内容模块";
+  deleteBtn.innerHTML = '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg><span>删除</span>';
+
+  actions.appendChild(renameBtn);
+  actions.appendChild(viewBtn);
+  actions.appendChild(deleteBtn);
+  footer.appendChild(count);
+  footer.appendChild(actions);
+  header.appendChild(icon);
+  header.appendChild(title);
+  if (typeTag) header.appendChild(typeTag);
+  header.appendChild(checkbox);
+  item.appendChild(header);
+  item.appendChild(preview);
+  item.appendChild(footer);
+
+  checkbox.addEventListener("change", (e) => {
+    e.stopPropagation();
+    if (e.target.checked) {
+      selectedModuleIds.add(module.id);
+    } else {
+      selectedModuleIds.delete(module.id);
+    }
+    renderContentModules();
+    notifyContentContextChanged();
+  });
+
+  item.addEventListener("click", (e) => {
+    if (e.target.closest(".mini-btn") || e.target.closest(".module-checkbox") || e.target.closest(".module-title-input") || e.target.closest(".qa-children-toggle")) return;
+    openFullContent(module.id);
+  });
+
+  renameBtn.addEventListener("click", (e) => { e.stopPropagation(); startEditingModuleTitle(module, title); });
+  viewBtn.addEventListener("click", (e) => { e.stopPropagation(); openFullContent(module.id); });
+  deleteBtn.addEventListener("click", (e) => { e.stopPropagation(); removeContentModule(module.id); });
+
+  return item;
+}
+
+function renderQaChildrenSection(parentId, children, { isEnabled, selectedModuleIds, contentModules }) {
+  const section = document.createElement("div");
+  section.className = "qa-children-section";
+
+  const isExpanded = expandedQaGroups.has(parentId);
+
+  // Toggle bar
+  const toggle = document.createElement("div");
+  toggle.className = `qa-children-toggle${isExpanded ? " expanded" : ""}`;
+  toggle.innerHTML = `
+    <svg class="icon toggle-arrow" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+    <span>问答笔记</span>
+    <span class="qa-children-count">(${children.length})</span>
+  `;
+  toggle.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (expandedQaGroups.has(parentId)) {
+      expandedQaGroups.delete(parentId);
+    } else {
+      expandedQaGroups.add(parentId);
+    }
+    renderContentModules();
+  });
+  section.appendChild(toggle);
+
+  // Children list (only if expanded)
+  if (isExpanded) {
+    const list = document.createElement("div");
+    list.className = "qa-children-list";
+    for (const child of children) {
+      const childItem = renderModuleItem(child, { isEnabled, selectedModuleIds, contentModules, isChild: true });
+      list.appendChild(childItem);
+    }
+    section.appendChild(list);
+  }
+
+  return section;
+}
+
 export function renderContentModules() {
   const contentModules = getContentModules();
   const selectedModuleIds = getSelectedModuleIds();
@@ -230,9 +410,8 @@ export function renderContentModules() {
     <span class="context-meta">${metaText}</span>
   `;
 
-
   selectAllModulesBtn.disabled = !isEnabled || contentModules.length === 0;
-  clearModulesBtn.disabled = !isEnabled || contentModules.length === 0;
+  clearModulesBtn.disabled = selectedCount === 0;
   contentModuleList.innerHTML = "";
 
   if (contentModules.length === 0) {
@@ -243,96 +422,102 @@ export function renderContentModules() {
     return;
   }
 
-  for (const module of contentModules) {
-    const item = document.createElement("div");
-    item.className = "content-module-item";
-    if (selectedModuleIds.has(module.id)) item.classList.add("selected");
+  // Separate modules into regular and QA notes
+  const regularModules = contentModules.filter((m) => !m.isQaNote);
+  const qaModules = contentModules.filter((m) => m.isQaNote);
 
-    const header = document.createElement("div");
-    header.className = "module-header";
+  // Build parent-children map
+  const childrenMap = new Map(); // parentId -> QA modules[]
+  const orphanQa = [];
 
-    const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    icon.setAttribute("class", "icon module-type-icon");
-    icon.setAttribute("viewBox", "0 0 24 24");
-    icon.innerHTML = '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline>';
+  for (const qa of qaModules) {
+    const sourceIds = Array.isArray(qa.sourceModuleIds) ? qa.sourceModuleIds : [];
+    const matchedParents = sourceIds.filter((id) => regularModules.find((m) => m.id === id));
 
-    const title = document.createElement("div");
-    title.className = "module-title";
-    title.textContent = module.label || "内容模块";
-    title.title = module.label || "内容模块";
+    if (matchedParents.length > 0) {
+      // Add to each matched parent's children list
+      for (const parentId of matchedParents) {
+        if (!childrenMap.has(parentId)) childrenMap.set(parentId, []);
+        childrenMap.get(parentId).push(qa);
+      }
+    } else {
+      orphanQa.push(qa);
+    }
+  }
 
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.className = "module-checkbox";
-    checkbox.checked = selectedModuleIds.has(module.id);
-    checkbox.disabled = !isEnabled;
+  const renderCtx = { isEnabled, selectedModuleIds, contentModules };
 
-    const preview = document.createElement("div");
-    preview.className = "module-preview";
-    preview.textContent = module.preview || module.content || "";
+  // Render each regular module with its QA children
+  for (const parent of regularModules) {
+    const item = renderModuleItem(parent, renderCtx);
+    const children = childrenMap.get(parent.id);
 
-    const footer = document.createElement("div");
-    footer.className = "module-footer";
-
-    const count = document.createElement("span");
-    count.className = "module-count";
-    count.textContent = `${module.charCount || module.content?.length || 0} 字`;
-
-    const actions = document.createElement("div");
-    actions.className = "module-actions";
-
-    const viewBtn = document.createElement("button");
-    viewBtn.className = "mini-btn view-btn";
-    viewBtn.type = "button";
-    viewBtn.title = "打开全文并摘录或编辑文本";
-    viewBtn.innerHTML = '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"></path><path d="M18 3h-6v6"></path><path d="M12 9 21 0"></path><path d="M8 13h8"></path><path d="M8 17h5"></path></svg><span>全文</span>';
-
-    const renameBtn = document.createElement("button");
-    renameBtn.className = "mini-btn rename-btn";
-    renameBtn.type = "button";
-    renameBtn.title = "修改文档标题";
-    renameBtn.innerHTML = '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"></path></svg><span>重命名</span>';
-
-    const deleteBtn = document.createElement("button");
-    deleteBtn.className = "mini-btn delete-btn subtle-danger";
-    deleteBtn.type = "button";
-    deleteBtn.title = "删除这个内容模块";
-    deleteBtn.innerHTML = '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg><span>删除</span>';
-
-    actions.appendChild(renameBtn);
-    actions.appendChild(viewBtn);
-    actions.appendChild(deleteBtn);
-    footer.appendChild(count);
-    footer.appendChild(actions);
-    header.appendChild(icon);
-    header.appendChild(title);
-    header.appendChild(checkbox);
-    item.appendChild(header);
-    item.appendChild(preview);
-    item.appendChild(footer);
-
-    checkbox.addEventListener("change", (e) => {
+    // Parent checkbox linkage: toggling parent also toggles children
+    const parentCheckbox = item.querySelector(".module-checkbox");
+    parentCheckbox.removeEventListener("change", parentCheckbox._handler);
+    const parentHandler = (e) => {
       e.stopPropagation();
-      if (e.target.checked) {
-        selectedModuleIds.add(module.id);
-        item.classList.add("selected");
+      const checked = e.target.checked;
+      if (checked) {
+        selectedModuleIds.add(parent.id);
       } else {
-        selectedModuleIds.delete(module.id);
-        item.classList.remove("selected");
+        selectedModuleIds.delete(parent.id);
+      }
+      // Linkage: also toggle all children
+      if (children) {
+        for (const child of children) {
+          if (checked) selectedModuleIds.add(child.id);
+          else selectedModuleIds.delete(child.id);
+        }
       }
       renderContentModules();
       notifyContentContextChanged();
-    });
-
-    item.addEventListener("click", (e) => {
-      if (e.target.closest(".mini-btn") || e.target.closest(".module-checkbox") || e.target.closest(".module-title-input")) return;
-      openFullContent(module.id);
-    });
-
-    renameBtn.addEventListener("click", (e) => { e.stopPropagation(); startEditingModuleTitle(module, title); });
-    viewBtn.addEventListener("click", (e) => { e.stopPropagation(); openFullContent(module.id); });
-    deleteBtn.addEventListener("click", (e) => { e.stopPropagation(); removeContentModule(module.id); });
+    };
+    parentCheckbox._handler = parentHandler;
+    parentCheckbox.addEventListener("change", parentHandler);
 
     contentModuleList.appendChild(item);
+
+    // Render QA children section if any
+    if (children && children.length > 0) {
+      const childSection = renderQaChildrenSection(parent.id, children, renderCtx);
+      contentModuleList.appendChild(childSection);
+    }
+  }
+
+  // Render orphan QA group
+  if (orphanQa.length > 0) {
+    const orphanGroup = document.createElement("div");
+    orphanGroup.className = "orphan-qa-group";
+
+    const orphanHeader = document.createElement("div");
+    orphanHeader.className = `qa-children-toggle${expandedQaGroups.has("orphan") ? " expanded" : ""}`;
+    orphanHeader.innerHTML = `
+      <svg class="icon toggle-arrow" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+      <span>未关联来源</span>
+      <span class="qa-children-count">(${orphanQa.length})</span>
+    `;
+    orphanHeader.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (expandedQaGroups.has("orphan")) {
+        expandedQaGroups.delete("orphan");
+      } else {
+        expandedQaGroups.add("orphan");
+      }
+      renderContentModules();
+    });
+    orphanGroup.appendChild(orphanHeader);
+
+    if (expandedQaGroups.has("orphan")) {
+      const list = document.createElement("div");
+      list.className = "qa-children-list";
+      for (const qa of orphanQa) {
+        const childItem = renderModuleItem(qa, { ...renderCtx, isChild: true });
+        list.appendChild(childItem);
+      }
+      orphanGroup.appendChild(list);
+    }
+
+    contentModuleList.appendChild(orphanGroup);
   }
 }

@@ -1,5 +1,5 @@
 import { resultArea, submittedContentViewer, submittedContentTitle, submittedContentMeta, submittedContentQuestion, submittedContentText, qaSelectToggleBtn } from "../lib/dom-refs.js";
-import { getLastResult } from "../lib/state.js";
+import { getLastResult, getSelectedModuleIds, getContentModules } from "../lib/state.js";
 import { escapeHtml } from "../lib/text-utils.js";
 import { openDrawerById } from "./drawers.js";
 import { pmCopySuccess } from "./modal.js";
@@ -66,6 +66,9 @@ export function renderResult(summary, isSelection, context = {}) {
         <button class="mini-action-btn copy-qa-btn" data-tooltip="复制完整内容" aria-label="复制完整内容">
           <svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6"></path><path d="M8 13h8"></path><path d="M8 17h5"></path></svg>
         </button>
+        <button class="mini-action-btn add-to-module-btn" data-tooltip="加入素材" aria-label="加入素材">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
       </div>
     </div>
     <div class="result-text" spellcheck="false">${escapeHtml(summary)}</div>
@@ -124,6 +127,44 @@ export function renderResult(summary, isSelection, context = {}) {
       copyAnswerBtn.innerHTML = `<svg class="icon" style="color:var(--success)" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
       setTimeout(() => (copyAnswerBtn.innerHTML = originalIcon), 2000);
     });
+  });
+
+  // Add-to-module button: add single QA pair as content module
+  const addToModuleBtn = card.querySelector(".add-to-module-btn");
+  addToModuleBtn.addEventListener("click", () => {
+    const question = context.question || "";
+    const answer = summary || "";
+    const sourceUrl = context.url || lastResult?.url || "";
+    const sourceTitle = context.title || lastResult?.title || "";
+
+    // Resolve sourceModuleIds: all selected non-isQaNote module IDs
+    const selectedIds = getSelectedModuleIds();
+    const modules = getContentModules();
+    const sourceModuleIds = [];
+    for (const id of selectedIds) {
+      const mod = modules.find((m) => m.id === id);
+      if (mod && !mod.isQaNote) {
+        sourceModuleIds.push(mod.id);
+      }
+    }
+
+    document.dispatchEvent(
+      new CustomEvent("aiWebAssistant:add-qa-to-module", {
+        detail: {
+          mode: "single",
+          qaData: { question, answer, sourceUrl, sourceTitle, sourceModuleIds },
+        },
+      })
+    );
+
+    // Success feedback: show ✓ icon for 2 seconds
+    addToModuleBtn.classList.add("success");
+    const originalIcon = addToModuleBtn.innerHTML;
+    addToModuleBtn.innerHTML = `<svg class="icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>`;
+    setTimeout(() => {
+      addToModuleBtn.classList.remove("success");
+      addToModuleBtn.innerHTML = originalIcon;
+    }, 2000);
   });
 
   // Expand / collapse for long answers
@@ -352,11 +393,13 @@ function qaShowBar() {
     <div class="qa-select-actions">
       <button class="mini-btn" data-qa="all">全选</button>
       <button class="mini-btn primary" data-qa="copy" disabled>复制选中</button>
+      <button class="mini-btn primary" data-qa="add-module" disabled>加入素材</button>
     </div>`;
   qaBar.addEventListener("click", (e) => {
     const action = e.target.closest("[data-qa]")?.dataset.qa;
     if (action === "all") qaToggleAll();
     if (action === "copy") qaCopy();
+    if (action === "add-module") qaAddToModule();
   });
   resultArea.after(qaBar);
 }
@@ -372,6 +415,7 @@ function qaUpdateBar() {
   const count = resultArea.querySelectorAll(".qa-pair.selected").length;
   qaBar.querySelector(".qa-select-count").textContent = `已选 ${count} 条`;
   qaBar.querySelector('[data-qa="copy"]').disabled = count === 0;
+  qaBar.querySelector('[data-qa="add-module"]').disabled = count === 0;
   qaBar.querySelector('[data-qa="all"]').textContent = count === total ? "取消全选" : "全选";
 }
 
@@ -437,6 +481,40 @@ function qaCopy() {
 
 function normalizeExportContentKey(content) {
   return String(content || "").replace(/\s+/g, " ").trim();
+}
+
+function qaAddToModule() {
+  const selected = [...resultArea.querySelectorAll(".qa-pair.selected")];
+  if (!selected.length) return;
+
+  // Resolve sourceModuleIds: all selected non-isQaNote module IDs
+  const selectedIds = getSelectedModuleIds();
+  const modules = getContentModules();
+  const sourceModuleIds = [];
+  for (const id of selectedIds) {
+    const mod = modules.find((m) => m.id === id);
+    if (mod && !mod.isQaNote) {
+      sourceModuleIds.push(mod.id);
+    }
+  }
+
+  const qaDataArray = selected.map((pair) => {
+    const question = pair.querySelector(".user-question-text")?.textContent?.trim() || "";
+    const answer = pair.querySelector(".result-text")?.textContent?.trim() || "";
+    const card = pair.querySelector(".result-card");
+    const exported = card?._qaExport;
+    const sourceUrl = exported?.url || "";
+    const sourceTitle = exported?.title || "";
+    return { question, answer, sourceUrl, sourceTitle, sourceModuleIds };
+  });
+
+  document.dispatchEvent(
+    new CustomEvent("aiWebAssistant:add-qa-to-module", {
+      detail: { mode: "multiple", qaDataArray },
+    })
+  );
+
+  qaExit();
 }
 
 function formatQaExportGroup(group) {

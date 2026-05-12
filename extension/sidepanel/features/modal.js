@@ -190,6 +190,56 @@ export function pmConfirm(title, options = {}) {
 }
 
 /**
+ * 选择弹窗 — 让用户从多个选项中选择一个
+ * @param {string} title
+ * @param {object} options
+ * @param {string} [options.message]
+ * @param {Array<{key: string, label: string}>} options.choices
+ * @param {string} [options.cancelText="取消"]
+ * @param {"info"|"warning"} [options.icon="info"]
+ * @returns {Promise<string|null>} 选中的 key 或取消时 null
+ */
+export function pmChoice(title, options = {}) {
+  const {
+    message = "",
+    choices = [],
+    cancelText = "取消",
+    icon = "info",
+  } = options;
+
+  return new Promise((resolve) => {
+    const dialog = createDialog({
+      icon,
+      title,
+      message,
+      className: "pm-choice-modal",
+      buttons: [
+        { label: cancelText, class: "cancel", onClick: () => resolve(null) },
+      ],
+    });
+
+    // Insert choice buttons before the actions area (cancel button)
+    const actionsEl = dialog.querySelector(".pm-modal-actions");
+    const choicesContainer = document.createElement("div");
+    choicesContainer.className = "pm-modal-choices";
+
+    for (const choice of choices) {
+      const btn = document.createElement("button");
+      btn.className = "pm-modal-btn choice";
+      btn.textContent = choice.label;
+      btn.addEventListener("click", () => {
+        hideModal();
+        resolve(choice.key);
+      });
+      choicesContainer.appendChild(btn);
+    }
+
+    actionsEl.before(choicesContainer);
+    showModal(dialog);
+  });
+}
+
+/**
  * 输入弹窗
  * @param {string} title
  * @param {object} [options]

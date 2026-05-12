@@ -20,13 +20,14 @@ import { api } from "./lib/api.js";
 import { openDrawerById, closeAllDrawers, closeDrawer, closeAttachmentMenu, initDraggableDrawers, initResizableDrawerPersistence } from "./features/drawers.js";
 import { renderPromptList, openPromptEditor, savePrompt, deletePrompt, loadSavedPrompts } from "./features/prompts.js";
 import { addFiles, addImages, buildAttachedFileContent, captureWindowsSnip, clearAttachedImages, renderImageAttachments } from "./features/images.js";
-import { clearPageContentContext, renderContentModules, CONTENT_CONTEXT_CHANGED_EVENT } from "./features/content-modules.js";
+import { clearPageContentContext, clearSelectedModules, renderContentModules, CONTENT_CONTEXT_CHANGED_EVENT } from "./features/content-modules.js";
 import { closeFullContent, setFullContentAction, rememberFullContentSelection, removePendingSelectionAt, handleFullContentTextInput, isCurrentSelectionInsideFullContent, applyPendingFullContentSelections, clearPendingFullContentSelections, saveFullContentViewPosition } from "./features/full-content.js";
 import { saveHistoryRecord, openHistoryDrawer, handleHistorySearchInput, clearHistoryRecords, createNewSession, ensureActiveSession, initHistory } from "./features/history.js";
 import { renderLoading, renderUserQuestion, renderError, renderResult, toggleQaSelectMode } from "./features/results.js";
 import { checkBridge, refreshPageInfo, buildSelectedPageContent, ensureCurrentPageData } from "./features/page-bridge.js";
 import { pmConfirm, pmPrompt } from "./features/modal.js";
 import { initGoogleDocsExport } from "./features/google-docs-export.js";
+import { initQaNotes } from "./features/qa-notes.js";
 import { FEATURE_FLAGS } from "./lib/build-flags.js";
 import { clearInviteCode, getInviteCode, saveInviteCode } from "./lib/invite-code.js";
 
@@ -377,14 +378,23 @@ qaSelectToggleBtn.addEventListener("click", () => {
 
 selectAllModulesBtn.addEventListener("click", () => {
   const contentModules = getContentModules();
-  setSelectedModuleIds(new Set(contentModules.map((module) => module.id)));
+  const selectedModuleIds = getSelectedModuleIds();
+  const allSelected = contentModules.length > 0 && selectedModuleIds.size === contentModules.length;
+  if (allSelected) {
+    setSelectedModuleIds(new Set());
+  } else {
+    setSelectedModuleIds(new Set(contentModules.map((module) => module.id)));
+  }
   renderContentModules();
   document.dispatchEvent(new CustomEvent(CONTENT_CONTEXT_CHANGED_EVENT));
 });
 
 clearModulesBtn.addEventListener("click", async () => {
-  if (await pmConfirm("清除全部网页内容？", { message: "已获取的网页内容模块将从当前上下文中移除", confirmText: "全部清除", icon: "warning", danger: false })) {
-    clearPageContentContext();
+  const selectedCount = document.querySelectorAll(".content-module-item.selected").length;
+  if (selectedCount === 0) return;
+  const msg = `清除已勾选的 ${selectedCount} 个内容模块？`;
+  if (await pmConfirm(msg, { message: "这些模块将从当前上下文中移除", confirmText: "清除选中", icon: "warning", danger: false })) {
+    clearSelectedModules();
   }
 });
 
@@ -449,6 +459,7 @@ document.addEventListener("click", () => {
 // --- Initialization ---
 
 initGoogleDocsExport();
+initQaNotes();
 initScreenshotCaptureControls();
 initDraggableDrawers();
 initResizableDrawerPersistence();
